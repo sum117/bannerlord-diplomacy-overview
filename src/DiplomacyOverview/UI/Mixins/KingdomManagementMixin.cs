@@ -1,7 +1,6 @@
-using System;
-using System.IO;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
+using DiplomacyOverview.UI.ViewModels;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -9,49 +8,48 @@ using TaleWorlds.Localization;
 namespace DiplomacyOverview.UI.Mixins
 {
     /// <summary>
-    /// TRACER RUN 2 shape: exact mirror of the one mixin PROVEN to bind on this machine —
-    /// Diplomacy 1.3.13's KingdomManagementVMMixin ([ViewModelMixin] with NO refresh argument,
-    /// text as a plain settable property assigned in the constructor). Run 1 showed our prefab
-    /// nodes applied (UIExtenderEx DumpXML evidence) but the tab button rendered without its
-    /// mixin-bound text; the run-1 mixin differed from Diplomacy's in exactly three ways
-    /// (refresh hook "OnFrameTick", getter-only expression property, no {..} re-scope in XML),
-    /// so run 2 eliminates all three at once and instruments the seams.
+    /// Adds the "Relations" tab state to the vanilla kingdom screen VM (docs/research/04 §A).
     ///
-    /// Deliberate regression, shared with Diplomacy/BannerKings: without a refresh hook there is
-    /// no deselect-on-vanilla-tab-click callback; a stale selected state is masked by panel
-    /// z-order (our panel renders under the vanilla panels). The production design will solve
-    /// deselection properly; the tracer only needs the binding proven.
+    /// Refresh hook rationale (docs/research/10, correction #1): clicking a vanilla tab runs
+    /// ExecuteShowX -> SetSelectedCategory, which only flips the per-tab Show bools and never
+    /// calls RefreshValues — a RefreshValues-hooked mixin would not fire on the exact interaction
+    /// that must deselect us. KingdomManagementVM.OnFrameTick is invoked by
+    /// GauntletKingdomScreen.OnFrameTick every frame while the screen is open [LOCAL decompile],
+    /// so hooking it runs the deselect check per frame: five bool reads when our tab is selected,
+    /// one bool read otherwise. The graph itself NEVER rebuilds here — rebuilds happen only in
+    /// SelectRelations, gated by the dirty flag (issue #6 acceptance: no per-frame campaign work).
     /// </summary>
     // handleDerived: TRUE is load-bearing — War Sails constructs NavalKingdomManagementVM (a
     // KingdomManagementVM subclass) and UIExtenderEx mixin lookup is exact-runtime-type keyed;
-    // without it the mixin silently never attaches on DLC installs (tracer run 3, docs 10 / P-22).
-    [ViewModelMixin(null, true)]
+    // without it the mixin silently never attaches on DLC installs (P-22, docs/research/10 run 3).
+    [ViewModelMixin("OnFrameTick", true)]
     internal sealed class KingdomManagementMixin : BaseViewModelMixin<KingdomManagementVM>
     {
+        private readonly RelationsVM _relations;
         private string _relationsText;
         private bool _relationsSelected;
-        private bool _readLogged;
 
         public KingdomManagementMixin(KingdomManagementVM vm) : base(vm)
         {
+            // Plain settable property assigned in the constructor — the exact shape the tracer
+            // proved binding on this modlist (mirrors Diplomacy's own kingdom mixin).
             _relationsText = new TextObject("{=DipOvTab01}Relations").ToString();
-            TracerDiag.Log("mixin attached; vm runtime type = " + vm.GetType().FullName);
+
+            // Created eagerly: the panel's DataSource="{Relations}" resolves at movie load,
+            // before any tab click. Contents stay empty until the first SelectRelations.
+            _relations = new RelationsVM();
         }
 
         [DataSourceProperty]
         public string RelationsText
         {
-            get
-            {
-                if (!_readLogged)
-                {
-                    _readLogged = true;
-                    TracerDiag.Log("RelationsText read by binder");
-                }
-                return _relationsText;
-            }
+            get => _relationsText;
             set => _relationsText = value;
         }
+
+        /// <summary>The whole tab's VM; the injected panel node re-scopes onto it.</summary>
+        [DataSourceProperty]
+        public RelationsVM Relations => _relations;
 
         [DataSourceProperty]
         public bool RelationsSelected
@@ -62,6 +60,7 @@ namespace DiplomacyOverview.UI.Mixins
                 if (value != _relationsSelected)
                 {
                     _relationsSelected = value;
+                    _relations.IsSelected = value; // panel visibility follows the tab button
                     OnPropertyChangedWithValue(value);
                 }
             }
@@ -70,13 +69,18 @@ namespace DiplomacyOverview.UI.Mixins
         [DataSourceMethod]
         public void SelectRelations()
         {
-            TracerDiag.Log("SelectRelations invoked");
             var vm = ViewModel;
             if (vm is null)
             {
                 return;
             }
 
+            // Lazy rebuild: only on tab open, and only when dirty or never built.
+            _relations.RebuildIfNeeded();
+
+            // Hide the five vanilla panels; their tab buttons follow automatically because
+            // KingdomTabControlListPanel.OnLateUpdate mirrors panel visibility into button
+            // IsSelected every frame (decompiled v1.3.15).
             vm.Clan.Show = false;
             vm.Settlement.Show = false;
             vm.Policy.Show = false;
@@ -84,29 +88,34 @@ namespace DiplomacyOverview.UI.Mixins
             vm.Diplomacy.Show = false;
             RelationsSelected = true;
         }
-    }
 
-    /// <summary>
-    /// Throwaway tracer instrumentation: appends to a plain-text log next to the other mod logs
-    /// so one game run answers "did the mixin attach / did the binder read the property / did the
-    /// click reach us" even when pixels are ambiguous. Never throws.
-    /// </summary>
-    internal static class TracerDiag
-    {
-        private static readonly string LogPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "Mount and Blade II Bannerlord", "Configs", "ModLogs", "DiplomacyOverview-tracer.log");
-
-        public static void Log(string message)
+        /// <summary>
+        /// Runs after every hooked KingdomManagementVM.OnFrameTick. If the player activated any
+        /// vanilla tab (its Show flag is set), our tab loses selection and the panel hides.
+        /// </summary>
+        public override void OnRefresh()
         {
-            try
+            if (!_relationsSelected)
             {
-                File.AppendAllText(LogPath, "[" + DateTime.Now.ToString("HH:mm:ss.fff") + "] " + message + "\r\n");
+                return;
             }
-            catch
+
+            var vm = ViewModel;
+            if (vm is null)
             {
-                // diagnostics must never hurt the game
+                return;
             }
+
+            if (vm.Clan.Show || vm.Settlement.Show || vm.Policy.Show || vm.Army.Show || vm.Diplomacy.Show)
+            {
+                RelationsSelected = false;
+            }
+        }
+
+        public override void OnFinalize()
+        {
+            _relations.OnFinalize();
+            base.OnFinalize();
         }
     }
 }

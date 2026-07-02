@@ -64,8 +64,11 @@ namespace DiplomacyOverview.UI.Mixins
     /// The element name resolves to our prefab file
     /// _Module/GUI/Prefabs/DiplomacyOverview/DiplomacyOverviewRelationsPanel.xml via
     /// WidgetFactory custom-type (prefab filename) discovery; attributes here are applied to
-    /// that prefab's root widget. No DataSource: the panel binds against KingdomManagementVM
-    /// itself, whose property set includes our mixin's properties.
+    /// that prefab's root widget. The node mirrors the vanilla panel idiom exactly
+    /// (&lt;ArmiesPanel DataSource="{Army}" MarginTop="188" MarginBottom="75" /&gt;):
+    /// DataSource="{Relations}" re-scopes the panel onto the mixin's RelationsVM, and the
+    /// prefab root binds IsVisible="@IsSelected" against that VM — just like the vanilla
+    /// panels' IsVisible="@Show".
     /// </summary>
     [PrefabExtension("KingdomManagement", "descendant::Widget[1]/Children")]
     internal sealed class KingdomManagementRelationsPanelExtension : PrefabExtensionInsertPatch
@@ -77,7 +80,7 @@ namespace DiplomacyOverview.UI.Mixins
             var panel = new XmlDocument();
             panel.LoadXml(
                 "<DiplomacyOverviewRelationsPanel Id=\"DiplomacyOverviewRelationsPanel\" " +
-                "IsVisible=\"@RelationsSelected\" MarginTop=\"188\" MarginBottom=\"75\" />");
+                "DataSource=\"{Relations}\" MarginTop=\"188\" MarginBottom=\"75\" />");
             _nodes = new List<XmlNode> { panel };
         }
 

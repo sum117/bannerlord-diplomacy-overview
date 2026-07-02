@@ -1,46 +1,69 @@
 <!--
-  Sacrificial tracer panel (issue #5). Root widget receives the attributes set by the
-  UIExtenderEx insert node (IsVisible="@RelationsSelected", MarginTop/MarginBottom), so the
-  whole panel shows/hides with the mixin's RelationsSelected property, exactly like the five
-  vanilla tab panels. Prefab file name = XML element name (global namespace, P-11).
+  Relations tab panel (issue #6): the kingdom war web.
 
-  Two line-rendering experiments side by side (S2, docs/research/04 §C):
-    A - plain Widgets: tinted BlankWhiteSquare_9 strips, one with Rotation="30" set from XML.
-        Both strips share the same top-left origin; default pivot is (0,0), so the red strip
-        should pivot around the shared origin while the gold control strip stays horizontal.
-    B - DiplomacyOverviewTracerLineWidget: custom widget drawing a line in OnRender.
-        Expected: gray border around its 400x300 box, a green line connecting two gold
-        endpoint markers.
+  The UIExtenderEx insert node applies DataSource="{Relations}" plus the vanilla panel margins to
+  this prefab's root widget, so every binding in this file resolves against RelationsVM — the root's
+  IsVisible="@IsSelected" is the exact vanilla panel idiom (ArmiesPanel root binds IsVisible="@Show"
+  against its DataSource="{Army}" scope). Prefab file name = XML element name (global namespace, P-11).
+
+  Layout: a fixed 1400x800 design-space canvas centered in the panel. Coordinates bound from the VM
+  (node PositionX/YOffset, edge X1..Y2) are design pixels inside this canvas — the canvas size and
+  the node box geometry (170x128 box, banner centered at (85,43)) MUST stay in sync with the
+  constants at the top of RelationsVM.cs.
+
+  Collection binding is the nameplate/map-trackers idiom (vanilla MapTrackers.xml): a plain
+  stretched Widget with DataSource="{List}" + ItemTemplate creates one free-positioned child per
+  item. Edges render BEFORE nodes so the lines pass under the medallions.
 -->
 <Prefab>
+  <Constants>
+    <Constant Name="Canvas.Width" Value="1400" />
+    <Constant Name="Canvas.Height" Value="800" />
+
+    <Constant Name="NodeBox.Width" Value="170" />
+    <Constant Name="NodeBox.Height" Value="128" />
+
+    <!-- banner_tuple natural size is 136x173; scaled to ~75x86 like vanilla map trackers -->
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.55" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.50" Value="!Banner.Height" />
+
+    <Constant Name="NodeLabel.MarginTop" Value="90" />
+  </Constants>
   <Window>
-    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected">
       <Children>
 
-        <!-- Backdrop: unmistakably alive even if both experiments fail -->
+        <!-- Backdrop: calm dark field the colored web reads against; also blocks map click-through -->
         <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#12121CFF" AlphaFactor="0.9" />
 
-        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="25" Brush="Kingdom.NameTitle.Text" Text="Diplomacy Overview - tracer (issue 5)" />
+        <!-- Title, top-left: the 12-o'clock node owns the top-center -->
+        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="15" Brush="Kingdom.NameTitle.Text" Text="@TitleText" />
 
-        <!-- ============ Technique A: XML Rotation on plain widgets ============ -->
-        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="460" SuggestedHeight="420" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="120">
+        <!-- Design-space canvas -->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Canvas.Width" SuggestedHeight="!Canvas.Height" HorizontalAlignment="Center" VerticalAlignment="Center">
           <Children>
-            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Leader.Text" Text="A: gold = no rotation, red = Rotation 30" />
 
-            <!-- control strip: no rotation -->
-            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="320" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="40" PositionYOffset="140" Sprite="BlankWhiteSquare_9" Color="#D4A017FF" />
+            <!-- Edges (under the nodes): one self-drawing widget per war line -->
+            <Widget DataSource="{Edges}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+              <ItemTemplate>
+                <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" LineColor="@LineColor" LineThickness="@LineThickness" />
+              </ItemTemplate>
+            </Widget>
 
-            <!-- experiment strip: identical geometry + Rotation="30" (default pivot = top-left) -->
-            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="320" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="40" PositionYOffset="140" Sprite="BlankWhiteSquare_9" Color="#C0392BFF" Rotation="30" />
-          </Children>
-        </Widget>
+            <!-- Nodes (over the edges): banner medallion + name label, freely positioned -->
+            <Widget DataSource="{Nodes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+              <ItemTemplate>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!NodeBox.Width" SuggestedHeight="!NodeBox.Height" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotAcceptEvents="true">
+                  <Children>
+                    <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="Flat.Tuple.Banner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                  </Children>
+                </Widget>
+              </ItemTemplate>
+            </Widget>
 
-        <!-- ============ Technique B: custom widget, OnRender DrawSprite ============ -->
-        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="460" SuggestedHeight="420" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="120">
-          <Children>
-            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Leader.Text" Text="B: OnRender green line between gold markers" />
-
-            <DiplomacyOverviewTracerLineWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="300" HorizontalAlignment="Left" VerticalAlignment="Top" PositionYOffset="80" LineThickness="6" />
           </Children>
         </Widget>
 
