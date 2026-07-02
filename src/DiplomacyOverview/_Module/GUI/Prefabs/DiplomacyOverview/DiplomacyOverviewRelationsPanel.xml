@@ -1,0 +1,50 @@
+<!--
+  Sacrificial tracer panel (issue #5). Root widget receives the attributes set by the
+  UIExtenderEx insert node (IsVisible="@RelationsSelected", MarginTop/MarginBottom), so the
+  whole panel shows/hides with the mixin's RelationsSelected property, exactly like the five
+  vanilla tab panels. Prefab file name = XML element name (global namespace, P-11).
+
+  Two line-rendering experiments side by side (S2, docs/research/04 §C):
+    A - plain Widgets: tinted BlankWhiteSquare_9 strips, one with Rotation="30" set from XML.
+        Both strips share the same top-left origin; default pivot is (0,0), so the red strip
+        should pivot around the shared origin while the gold control strip stays horizontal.
+    B - DiplomacyOverviewTracerLineWidget: custom widget drawing a line in OnRender.
+        Expected: gray border around its 400x300 box, a green line connecting two gold
+        endpoint markers.
+-->
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!-- Backdrop: unmistakably alive even if both experiments fail -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#12121CFF" AlphaFactor="0.9" />
+
+        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="25" Brush="Kingdom.NameTitle.Text" Text="Diplomacy Overview - tracer (issue 5)" />
+
+        <!-- ============ Technique A: XML Rotation on plain widgets ============ -->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="460" SuggestedHeight="420" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="120">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Leader.Text" Text="A: gold = no rotation, red = Rotation 30" />
+
+            <!-- control strip: no rotation -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="320" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="40" PositionYOffset="140" Sprite="BlankWhiteSquare_9" Color="#D4A017FF" />
+
+            <!-- experiment strip: identical geometry + Rotation="30" (default pivot = top-left) -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="320" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="40" PositionYOffset="140" Sprite="BlankWhiteSquare_9" Color="#C0392BFF" Rotation="30" />
+          </Children>
+        </Widget>
+
+        <!-- ============ Technique B: custom widget, OnRender DrawSprite ============ -->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="460" SuggestedHeight="420" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="120">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Leader.Text" Text="B: OnRender green line between gold markers" />
+
+            <DiplomacyOverviewTracerLineWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="300" HorizontalAlignment="Left" VerticalAlignment="Top" PositionYOffset="80" LineThickness="6" />
+          </Children>
+        </Widget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>
