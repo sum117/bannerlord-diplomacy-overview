@@ -37,11 +37,17 @@ Raw asks → status:
    scope dropdown ✅; in clan scope, cluster clans by kingdom on the circle (RoT houses group
    naturally) ✅ (doc 07 M3).
 
-## The Trade Pact decision (needs client input)
+## The Trade Pact decision — **DECIDED 2026-07-02: option 1**
 
-Verified: no trade-agreement concept in vanilla or the Diplomacy mod; two gameplay mods
-(Art of the Trade, Living Economy) implement their own — reflection adapters are possible later
-(doc 05). Options, in recommended order:
+Decision (recorded in issue #4): substitute with **Non-Aggression Pact** lines, strictly
+presence-gated — when the Diplomacy mod is installed the NAP legend entry and dashed lines appear;
+when it isn't, the feature is simply absent (no greyed-out stub). Rationale: NAPs are real,
+data-backed, and visually equivalent to the mock's third line type, and realistic mod lists include
+Diplomacy anyway. Option 3 (economy-mod adapters) stays open as a possible v2, uncommitted.
+
+Original analysis: no trade-agreement concept exists in vanilla or the Diplomacy mod; two gameplay
+mods (Art of the Trade, Living Economy) implement their own — reflection adapters are possible later
+(doc 05). Options considered, in recommended order:
 
 1. **Substitute with real data**: legend = War (red) / Alliance (green) / **Non-Aggression Pact**
    (orange or dashed) via the Diplomacy mod — visually equivalent to the mock, fully data-backed.
