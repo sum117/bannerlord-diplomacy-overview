@@ -4,9 +4,11 @@ using TaleWorlds.Library;
 namespace DiplomacyOverview.UI.ViewModels
 {
     /// <summary>
-    /// One relation line on the web: trimmed endpoints in canvas design pixels plus styling,
-    /// bound 1:1 onto a <see cref="Widgets.DiplomacyOverviewEdgeWidget"/>. Keeps the source
-    /// <see cref="RelationEdge"/> (with its Details payload) for the future tooltip pass.
+    /// One relation line on the web: trimmed endpoints plus the routing apex in canvas design
+    /// pixels plus styling, bound 1:1 onto a <see cref="Widgets.DiplomacyOverviewEdgeWidget"/>
+    /// (apex == segment midpoint ⇒ straight; pulled toward the circle center ⇒ bowed curve for
+    /// short-range edges — see GraphCanvasEdge). Keeps the source <see cref="RelationEdge"/>
+    /// (with its Details payload) for the future tooltip pass.
     /// </summary>
     internal sealed class RelationEdgeVM : ViewModel
     {
@@ -14,16 +16,29 @@ namespace DiplomacyOverview.UI.ViewModels
         private readonly float _y1;
         private readonly float _x2;
         private readonly float _y2;
+        private readonly float _apexX;
+        private readonly float _apexY;
         private readonly string _lineColor;
         private readonly float _lineThickness;
 
-        public RelationEdgeVM(RelationEdge edge, float x1, float y1, float x2, float y2, string lineColor, float lineThickness)
+        public RelationEdgeVM(
+            RelationEdge edge,
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float apexX,
+            float apexY,
+            string lineColor,
+            float lineThickness)
         {
             Edge = edge;
             _x1 = x1;
             _y1 = y1;
             _x2 = x2;
             _y2 = y2;
+            _apexX = apexX;
+            _apexY = apexY;
             _lineColor = lineColor;
             _lineThickness = lineThickness;
         }
@@ -42,6 +57,12 @@ namespace DiplomacyOverview.UI.ViewModels
 
         [DataSourceProperty]
         public float Y2 => _y2;
+
+        [DataSourceProperty]
+        public float ApexX => _apexX;
+
+        [DataSourceProperty]
+        public float ApexY => _apexY;
 
         /// <summary>"#RRGGBBAA", parsed widget-side via Color.ConvertStringToColor.</summary>
         [DataSourceProperty]

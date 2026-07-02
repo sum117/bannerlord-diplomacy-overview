@@ -40,7 +40,7 @@
             <!-- Edges (under the nodes): one self-drawing widget per war line -->
             <Widget DataSource="{Edges}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" LineColor="@LineColor" LineThickness="@LineThickness" />
+                <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" ApexX="@ApexX" ApexY="@ApexY" LineColor="@LineColor" LineThickness="@LineThickness" />
               </ItemTemplate>
             </Widget>
 

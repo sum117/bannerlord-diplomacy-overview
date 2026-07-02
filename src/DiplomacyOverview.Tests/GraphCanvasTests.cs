@@ -64,12 +64,23 @@ namespace DiplomacyOverview.Tests
         }
 
         [Fact]
-        public void Compute_OverlappingMedallions_ClampTrimToSegmentMidpoint()
+        public void Compute_LongChord_IsStraight_ApexEqualsSegmentMidpoint()
+        {
+            var war = RelationEdge.Create("n0", "n2", RelationKind.War);
+            var layout = GraphCanvas.Compute(Graph(new[] { "n0", "n1", "n2", "n3" }, war), in Spec);
+
+            var edge = Assert.Single(layout.Edges);
+            Assert.Equal((edge.X1 + edge.X2) / 2.0, edge.ApexX, precision: 9);
+            Assert.Equal((edge.Y1 + edge.Y2) / 2.0, edge.ApexY, precision: 9);
+        }
+
+        [Fact]
+        public void Compute_OverlappingMedallions_KeepStubAndDoNotDegenerate()
         {
             // Two nodes on a tiny circle: centers (500,460) and (500,540) are 80 apart — less
-            // than 2 x nodeRadius (100). Naive trimming would cross the endpoints past each
-            // other (issue #6 core-contract note); the clamp collapses the segment onto the
-            // midpoint instead, which renderers then skip as zero-length.
+            // than 2 x nodeRadius (100). The old design collapsed this to a zero-length midpoint
+            // pair; runs 7–8 showed that on dense rings EVERY war is such a pair, so short-range
+            // edges now keep a 4 px stub for the renderer's curve to hang from.
             var spec = new GraphCanvasSpec(1000, 1000, circleRadius: 40, nodeRadius: 50);
             var war = RelationEdge.Create("a", "b", RelationKind.War);
 
@@ -77,9 +88,43 @@ namespace DiplomacyOverview.Tests
 
             var edge = Assert.Single(layout.Edges);
             Assert.Equal(500, edge.X1, precision: 9);
-            Assert.Equal(500, edge.Y1, precision: 9);
+            Assert.Equal(498, edge.Y1, precision: 9);
             Assert.Equal(500, edge.X2, precision: 9);
-            Assert.Equal(500, edge.Y2, precision: 9);
+            Assert.Equal(502, edge.Y2, precision: 9);
+        }
+
+        [Fact]
+        public void Compute_DenseRingNeighbors_BowTowardTheCircleCenter()
+        {
+            // The reference shattered world's shape: many nodes, adjacent pair at war
+            // (docs/research/10 run 8). Straight routing would leave nothing visible.
+            var spec = new GraphCanvasSpec(1400, 800, circleRadius: 370, nodeRadius: 18);
+            var nodes = new List<string>();
+            for (var i = 0; i < 80; i++)
+            {
+                nodes.Add("k" + i.ToString("00"));
+            }
+
+            var war = RelationEdge.Create("k00", "k01", RelationKind.War);
+            var layout = GraphCanvas.Compute(Graph(nodes, war), in spec);
+
+            var edge = Assert.Single(layout.Edges);
+
+            // Endpoints survive as a stub instead of degenerating.
+            var stub = Math.Sqrt(
+                (edge.X2 - edge.X1) * (edge.X2 - edge.X1) + (edge.Y2 - edge.Y1) * (edge.Y2 - edge.Y1));
+            Assert.InRange(stub, 3.5, 4.5);
+
+            // The apex sits inside the ring at the clearance radius, on the mid-center ray.
+            var apexRadius = Math.Sqrt(
+                (edge.ApexX - 700.0) * (edge.ApexX - 700.0) + (edge.ApexY - 400.0) * (edge.ApexY - 400.0));
+            Assert.Equal(370.0 - (2.0 * 18.0 + 8.0), apexRadius, precision: 6);
+
+            var midX = (edge.X1 + edge.X2) / 2.0;
+            var midY = (edge.Y1 + edge.Y2) / 2.0;
+            Assert.NotEqual(midX, edge.ApexX, precision: 3);
+            var cross = (midX - 700.0) * (edge.ApexY - 400.0) - (midY - 400.0) * (edge.ApexX - 700.0);
+            Assert.Equal(0.0, cross, precision: 3);
         }
 
         [Fact]

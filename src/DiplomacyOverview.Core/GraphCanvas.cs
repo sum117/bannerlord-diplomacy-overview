@@ -61,8 +61,13 @@ namespace DiplomacyOverview.Core
 
     /// <summary>
     /// An edge segment on the canvas, trimmed back from both node centers so it starts and ends at
-    /// medallion boundaries. Carries the source <see cref="RelationEdge"/> so callers can derive
-    /// styling (kind, color) and tooltip payloads without re-joining.
+    /// medallion boundaries, plus a routing apex: for comfortably-long chords the apex IS the
+    /// segment midpoint (renderers draw a straight line); for short-range edges — where the
+    /// straight line would vanish under the two medallions — the apex is pulled toward the circle
+    /// center, and renderers draw the quadratic curve (endpoints, control = 2·apex − midpoint)
+    /// so the relation dips visibly into the ring interior (docs/research/10 run 8). Carries the
+    /// source <see cref="RelationEdge"/> so callers can derive styling (kind, color) and tooltip
+    /// payloads without re-joining.
     /// </summary>
     public readonly struct GraphCanvasEdge
     {
@@ -71,14 +76,18 @@ namespace DiplomacyOverview.Core
         public double Y1 { get; }
         public double X2 { get; }
         public double Y2 { get; }
+        public double ApexX { get; }
+        public double ApexY { get; }
 
-        public GraphCanvasEdge(RelationEdge edge, double x1, double y1, double x2, double y2)
+        public GraphCanvasEdge(RelationEdge edge, double x1, double y1, double x2, double y2, double apexX, double apexY)
         {
             Edge = edge;
             X1 = x1;
             Y1 = y1;
             X2 = x2;
             Y2 = y2;
+            ApexX = apexX;
+            ApexY = apexY;
         }
     }
 
@@ -98,12 +107,25 @@ namespace DiplomacyOverview.Core
     /// <summary>
     /// Pure, deterministic projection of a <see cref="RelationGraph"/> onto a fixed design-space
     /// canvas: nodes are spread on a circle centered on the canvas (12 o'clock first, clockwise —
-    /// see <see cref="CircleLayout"/>), edges become straight segments between node centers,
-    /// trimmed back by the node radius on both ends. This is the whole "graph to VM coordinates"
-    /// step, kept free of game types so it is unit-testable.
+    /// see <see cref="CircleLayout"/>), edges become segments between node centers trimmed back
+    /// by the node radius — routed straight when enough line survives the trim, bowed toward the
+    /// circle center when it would not (see <see cref="GraphCanvasEdge"/>). This is the whole
+    /// "graph to VM coordinates" step, kept free of game types so it is unit-testable.
     /// </summary>
     public static class GraphCanvas
     {
+        /// <summary>Below this many px of trim-surviving straight line, the edge bows instead —
+        /// a shorter dash reads as noise, not a relation (docs/research/10 runs 7–8: on an
+        /// 82-kingdom ring EVERY war was neighbor-vs-neighbor and degenerated to nothing).</summary>
+        private const double MinVisibleStraightEdge = 24.0;
+
+        /// <summary>Bowed edges keep a 2·HalfStub chord so the curve has real endpoints even
+        /// between touching medallions.</summary>
+        private const double HalfStub = 2.0;
+
+        /// <summary>Extra daylight between the medallion ring's inner edge and a bowed apex.</summary>
+        private const double ApexClearancePad = 8.0;
+
         public static GraphCanvasLayout Compute(RelationGraph graph, in GraphCanvasSpec spec)
         {
             if (graph is null)
@@ -132,18 +154,47 @@ namespace DiplomacyOverview.Core
                 var a = positionById[edge.NodeA];
                 var b = positionById[edge.NodeB];
 
-                // Clamp the trim to the segment midpoint: when two medallions sit closer than
-                // 2 x NodeRadius, a full trim from each end would cross the endpoints past each
-                // other (issue #6 core-contract note). Clamped, the segment degenerates to a
-                // zero-length midpoint pair, which renderers skip — the line is fully hidden
-                // behind the overlapping medallions anyway.
                 var dx = b.X - a.X;
                 var dy = b.Y - a.Y;
                 var distance = Math.Sqrt(dx * dx + dy * dy);
-                var trim = Math.Min(spec.NodeRadius, distance / 2.0);
+                var mid = new Point2D((a.X + b.X) / 2.0, (a.Y + b.Y) / 2.0);
+
+                double trim;
+                var apex = mid; // apex == segment midpoint ⇒ renderers draw a straight line
+                if (distance - 2.0 * spec.NodeRadius >= MinVisibleStraightEdge)
+                {
+                    // Long chord: straight, trimmed back to the medallion boundaries.
+                    trim = spec.NodeRadius;
+                }
+                else if (distance < 2.0 * HalfStub)
+                {
+                    // Medallions effectively coincide — nothing sensible to draw. Degenerate to
+                    // the midpoint pair, which renderers skip as zero-length.
+                    trim = distance / 2.0;
+                }
+                else
+                {
+                    // Short-range edge (neighbors on a dense ring): keep a small chord stub and
+                    // pull the apex toward the circle center, so the curve dips out from under
+                    // the medallions into open canvas instead of vanishing beneath them.
+                    trim = Math.Min(spec.NodeRadius, distance / 2.0 - HalfStub);
+
+                    var mdx = mid.X - center.X;
+                    var mdy = mid.Y - center.Y;
+                    var midRadius = Math.Sqrt(mdx * mdx + mdy * mdy);
+                    var apexRadius = Math.Min(
+                        midRadius,
+                        Math.Max(0.0, spec.CircleRadius - (2.0 * spec.NodeRadius + ApexClearancePad)));
+                    if (midRadius > 1e-9)
+                    {
+                        apex = new Point2D(
+                            center.X + mdx / midRadius * apexRadius,
+                            center.Y + mdy / midRadius * apexRadius);
+                    }
+                }
 
                 var (start, end) = CircleLayout.TrimToNodeEdges(a, b, trim);
-                edges[i] = new GraphCanvasEdge(edge, start.X, start.Y, end.X, end.Y);
+                edges[i] = new GraphCanvasEdge(edge, start.X, start.Y, end.X, end.Y, apex.X, apex.Y);
             }
 
             return new GraphCanvasLayout(nodes, edges);

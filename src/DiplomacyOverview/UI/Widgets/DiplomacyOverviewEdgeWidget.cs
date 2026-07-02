@@ -28,6 +28,9 @@ namespace DiplomacyOverview.UI.Widgets
     {
         private const string SpriteName = "BlankWhiteSquare_9";
 
+        /// <summary>Polyline resolution for bowed edges; straight edges cost a single sprite.</summary>
+        private const int CurveSegments = 12;
+
         private string _lineColorText = RelationPaletteDefaultColorText;
         private Color _lineColor = new Color(1f, 1f, 1f);
         private bool _renderBroken;
@@ -51,6 +54,13 @@ namespace DiplomacyOverview.UI.Widgets
 
         /// <summary>Segment end Y, canvas design px.</summary>
         public float Y2 { get; set; }
+
+        /// <summary>Routing apex X (GraphCanvasEdge): equal to the segment midpoint for straight
+        /// edges; pulled toward the circle center for short-range bowed edges.</summary>
+        public float ApexX { get; set; }
+
+        /// <summary>Routing apex Y, canvas design px.</summary>
+        public float ApexY { get; set; }
 
         /// <summary>Line thickness in design px.</summary>
         public float LineThickness { get; set; } = 4f;
@@ -120,7 +130,8 @@ namespace DiplomacyOverview.UI.Widgets
                 _loggedFirstRender = true;
                 Diagnostics.Note(
                     "edge widget rendering: (" + X1 + "," + Y1 + ")->(" + X2 + "," + Y2
-                    + ") thickness " + LineThickness + " color " + _lineColorText);
+                    + ") apex (" + ApexX + "," + ApexY + ") thickness " + LineThickness
+                    + " color " + _lineColorText);
             }
 
             Sprite sprite = Context.SpriteData.GetSprite(SpriteName);
@@ -131,13 +142,32 @@ namespace DiplomacyOverview.UI.Widgets
             }
 
             float s = _scaleToUse;
-            DrawLine(
-                drawContext,
-                sprite,
-                new Vector2(X1 * s, Y1 * s),
-                new Vector2(X2 * s, Y2 * s),
-                Math.Max(1f, LineThickness * s),
-                _lineColor);
+            var from = new Vector2(X1 * s, Y1 * s);
+            var to = new Vector2(X2 * s, Y2 * s);
+            float thickness = Math.Max(1f, LineThickness * s);
+
+            // Apex == segment midpoint ⇒ straight (GraphCanvasEdge contract). Anything beyond
+            // sub-pixel bow renders as a quadratic curve so short-range relations emerge from
+            // under the medallions (docs/research/10 run 8).
+            var mid = (from + to) * 0.5f;
+            var bow = new Vector2(ApexX * s, ApexY * s) - mid;
+            if (bow.Length() < 0.75f * s)
+            {
+                DrawLine(drawContext, sprite, from, to, thickness, _lineColor);
+                return;
+            }
+
+            // Quadratic Bezier through the apex at t=0.5: control = 2·apex − midpoint.
+            var control = mid + bow * 2f;
+            var prev = from;
+            for (var i = 1; i <= CurveSegments; i++)
+            {
+                float t = i / (float)CurveSegments;
+                float u = 1f - t;
+                var point = from * (u * u) + control * (2f * u * t) + to * (t * t);
+                DrawLine(drawContext, sprite, prev, point, thickness, _lineColor);
+                prev = point;
+            }
         }
 
         /// <summary>

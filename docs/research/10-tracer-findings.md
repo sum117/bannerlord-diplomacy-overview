@@ -450,3 +450,22 @@ node-border war tinting is a candidate for the legend/tooltip pass.
 **Meta-lesson (now practice):** silent degradation cost two user runs; one `Diagnostics.Note`
 line answered in seconds what four hours of static analysis could not. Every stage of this mod
 must leave a breadcrumb (kept: rebuild counts + scale/label state per rebuild).
+
+## Addendum — run 8 (2026-07-02): chip ring confirmed; short-range edges now bow inward
+
+User screenshot: the adaptive density renders exactly as designed — a clean, well-spaced ring of
+82 small banner chips, labels off. Breadcrumbs: `82 kingdoms, 5 war lines (5 raw provider edges);
+node scale 0.34, labels off` — but all five edge widgets still logged `start == end`. Every war in
+this world is neighbor-vs-neighbor (Separatism wars are rebel-vs-parent, and those kingdoms are
+adjacent in creation order — the COMMON case on shattered worlds, not an edge case), and adjacent
+chips at 28 px spacing leave no room for a straight trimmed line at any trim radius.
+
+**Fix: short-range edges bow into the ring interior (Core, 85/85).** `GraphCanvasEdge` gained a
+routing apex: long chords (≥24 px of trim-surviving line) stay straight with apex == segment
+midpoint; short-range edges keep a 4 px chord stub and get their apex pulled onto the mid-center
+ray at `circleRadius − (2·nodeRadius + 8)` — the curve dips out from under the two medallions into
+open canvas. The fully-degenerate case (chips actually coinciding, < 4 px) still collapses and is
+skipped. The edge widget draws bowed edges as a 12-segment quadratic-Bezier polyline
+(control = 2·apex − midpoint; apex ≈ midpoint short-circuits to the single straight sprite, so
+sparse worlds pay nothing). Expected on the reference world: five small red arcs hanging inside
+the ring at the warring neighbors.

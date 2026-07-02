@@ -202,6 +202,8 @@ namespace DiplomacyOverview.UI.ViewModels
                     (float)edge.Y1,
                     (float)edge.X2,
                     (float)edge.Y2,
+                    (float)edge.ApexX,
+                    (float)edge.ApexY,
                     RelationPalette.ColorOf(edge.Edge.Kind),
                     (float)density.EdgeThickness));
             }
