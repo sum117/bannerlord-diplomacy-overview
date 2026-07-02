@@ -113,6 +113,12 @@ rely on absolute positions for anything semantic.
 > sketch's `Index => 5` lands mid-strip, not "after the 5 buttons". Node tables for both anchors:
 > doc 10.
 
+> **[TRACER #5 correction 2 — load-bearing]** On War Sails installs the kingdom screen constructs
+> `NavalKingdomManagementVM` (a `KingdomManagementVM` subclass) and mixin lookup is
+> exact-runtime-type keyed: the mixin above MUST be declared `[ViewModelMixin(null, true)]`
+> (`handleDerived`) or it silently never attaches while prefab patches still apply (P-22, doc 10
+> runs 1–3).
+
 ## B. Fallback shell: standalone screen
 
 If tab-strip crowding (RoT theming + BannerKings tabs) ever bites: `ScreenManager.PushScreen` a

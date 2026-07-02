@@ -88,3 +88,14 @@ intuition when a name "looks wrong".
 
 **P-21 — Two kingdom-screen extenders in one list (us + BannerKings) crowd the tab strip** — keep the
 tab label short, test the combo, keep the standalone-screen fallback alive (docs 04 §B, 06).
+
+**P-22 — War Sails swaps campaign ViewModels for `Naval*` subclasses; exact-type-keyed extensions
+silently miss.** With NavalDLC enabled, the kingdom screen constructs
+`NavalDLC.ViewModelCollection.Kingdom.NavalKingdomManagementVM : KingdomManagementVM` (verified via
+a headless UIExtenderEx-registry dump, doc 10 run 3). UIExtenderEx mixins attach by
+`instance.GetType()` **exact match**, so a mixin registered for the base VM never attaches on DLC
+installs — with zero errors anywhere (`MessageUtils.Fail` paths are release-silent). Fix:
+`[ViewModelMixin(null, true)]` (`handleDerived`) or a dedicated naval patch module — which is
+precisely why `Bannerlord.DiplomacyNavalDLCPatch` exists (its whole payload is Diplomacy's mixins
+re-targeted at `NavalKingdomManagementVM`). Prefab patches are unaffected (movie names don't
+change). Assume the same pattern for any other campaign screen the DLC touches.

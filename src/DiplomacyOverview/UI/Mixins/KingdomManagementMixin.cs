@@ -22,7 +22,10 @@ namespace DiplomacyOverview.UI.Mixins
     /// z-order (our panel renders under the vanilla panels). The production design will solve
     /// deselection properly; the tracer only needs the binding proven.
     /// </summary>
-    [ViewModelMixin]
+    // handleDerived: TRUE is load-bearing — War Sails constructs NavalKingdomManagementVM (a
+    // KingdomManagementVM subclass) and UIExtenderEx mixin lookup is exact-runtime-type keyed;
+    // without it the mixin silently never attaches on DLC installs (tracer run 3, docs 10 / P-22).
+    [ViewModelMixin(null, true)]
     internal sealed class KingdomManagementMixin : BaseViewModelMixin<KingdomManagementVM>
     {
         private string _relationsText;
