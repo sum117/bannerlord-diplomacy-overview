@@ -1,5 +1,7 @@
+extern alias game;
+
 using System;
-using System.Numerics;
+using Vector2 = game::System.Numerics.Vector2;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
 using TaleWorlds.Library;
@@ -45,10 +47,34 @@ namespace DiplomacyOverview.UI.Widgets
         /// <summary>Line thickness in design pixels; settable from prefab XML.</summary>
         public float LineThickness { get; set; } = 6f;
 
+        private bool _renderBroken;
+
         protected override void OnRender(TwoDimensionContext twoDimensionContext, TwoDimensionDrawContext drawContext)
         {
             base.OnRender(twoDimensionContext, drawContext);
+            if (_renderBroken)
+            {
+                return;
+            }
 
+            // AGENTS.md rule 6: worst failure mode is "lines missing", never a crash. The drawing
+            // body lives in a SEPARATE method on purpose: JIT-time signature failures
+            // (MissingMethodException, the P-23 crash class) are thrown when the method containing
+            // the bad token is first compiled — keeping those tokens out of OnRender itself makes
+            // them catchable here instead of detonating in the game's render loop.
+            try
+            {
+                RenderExperiments(drawContext);
+            }
+            catch (Exception ex)
+            {
+                _renderBroken = true;
+                Mixins.TracerDiag.Log("OnRender FAILED (widget self-disabled): " + ex);
+            }
+        }
+
+        private void RenderExperiments(TwoDimensionDrawContext drawContext)
+        {
             Sprite sprite = Context.SpriteData.GetSprite(SpriteName);
             if (sprite?.Texture is null)
             {

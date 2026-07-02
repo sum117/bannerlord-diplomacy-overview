@@ -99,3 +99,22 @@ installs — with zero errors anywhere (`MessageUtils.Fail` paths are release-si
 precisely why `Bannerlord.DiplomacyNavalDLCPatch` exists (its whole payload is Diplomacy's mixins
 re-targeted at `NavalKingdomManagementVM`). Prefab patches are unaffected (movie names don't
 change). Assume the same pattern for any other campaign screen the DLC touches.
+
+**P-23 — Two `Vector2` types exist at runtime; bind to the game's, or crash at JIT.** The game's
+UI APIs (`Widget.Size`, `Rectangle2D` fields, draw contexts) use `System.Numerics.Vector2` from
+**`System.Numerics.Vectors, Version=4.1.3.0`** (the DLL the game ships in `bin`). The .NET
+Framework targeting pack's `System.Numerics, 4.0.0.0` facade defines a structurally identical but
+**referentially different** `Vector2`, and the SDK references that facade implicitly — so
+`using System.Numerics;` silently compiles your code against the wrong identity and every
+cross-assembly signature containing it throws `MissingMethodException` at JIT (observed:
+`Widget.get_Size`). The `System.Numerics.Vectors` NuGet doesn't save you (4.5.0 = assembly
+4.1.4.0, still ≠ 4.1.3.0), and `<Reference Remove="System.Numerics"/>` can't beat the SDK's
+implicit reference (CS0433 at best). Working fix: reference the **game's own**
+`System.Numerics.Vectors.dll` (`Private=False`) with `<Aliases>game</Aliases>`, then in each
+Vector2-consuming file: `extern alias game;` + `using Vector2 = game::System.Numerics.Vector2;`.
+Verify by reading your DLL's AssemblyRef table (must show 4.1.3.0 and no `System.Numerics`).
+Corollary of the general rule: for any type appearing in game API *signatures*, your compiled
+identity must match the game's loaded identity exactly — decompiler output hides this (both sides
+print "Vector2"). Related mitigation: keep risky tokens out of `OnRender` itself (JIT-time throws
+in a virtual the engine calls are uncatchable by you); put them in a child method wrapped in a
+self-disabling try/catch (AGENTS.md rule 6).

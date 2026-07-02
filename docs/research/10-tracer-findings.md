@@ -332,3 +332,27 @@ Recorded as **P-22** in doc 08. Remaining: one human campaign run to confirm the
 finally collect the S2 line-rendering observations (original manual script above applies
 unchanged). Tracer probes (`DumpUieState`, ctor probe) and UIExtenderEx's `DumpXML=true` tag stay
 in place until that run passes, then get removed.
+
+## Addendum — run 4 (2026-07-02): P-22 fix confirmed in-game; new crash → P-23, fixed
+
+Run 4 (user): **the Relations tab appeared, was clickable, the mixin bound, the panel loaded and
+our custom widget instantiated and reached `OnRender`** — P-22 fix confirmed end-to-end and **S1
+is now runtime-proven** (auto-discovery works exactly as the registration-chain decompile said).
+Clicking the tab then crashed:
+`MissingMethodException: 'System.Numerics.Vector2 TaleWorlds.GauntletUI.BaseTypes.Widget.get_Size()'`
+in `DiplomacyOverviewTracerLineWidget.OnRender` (BLSE/ButterLib crash screen attributed the module
+correctly — the crash-report ecosystem works as doc 06 describes).
+
+Root cause: **assembly-identity split on `Vector2`** — full write-up as **P-23** in doc 08. Exact
+AssemblyRef evidence: game runtime + refasm + game-shipped DLL all use `System.Numerics.Vectors
+4.1.3.0`; our DLL had compiled against the framework facade `System.Numerics 4.0.0.0`.
+⚠️ This **supersedes correction #5 above**: the `System.Numerics.Vectors` NuGet (4.5.0 → assembly
+4.1.4.0) is NOT the right reference — use the game's own DLL via `extern alias` (P-23 recipe;
+applied in the csproj + widget).
+
+Also applied: `OnRender` now delegates to a child method inside try/catch and **self-disables on
+first failure** (AGENTS.md rule 6) — JIT-time signature errors in the child are catchable, so this
+crash class can never take down the screen again. Verified post-fix: build green, 49/49 tests, and
+the module's AssemblyRef table shows `System.Numerics.Vectors 4.1.3.0` with no `System.Numerics`.
+
+S2 remains the only open observation — same manual script, one more run.

@@ -18,9 +18,17 @@
     <!-- compile-time refs; never shipped (their modules provide them at runtime) -->
     <PackageReference Include="Lib.Harmony" Version="2.3.3" IncludeAssets="compile" />
     <PackageReference Include="Bannerlord.UIExtenderEx" Version="2.13.2" IncludeAssets="compile" />
-    <!-- System.Numerics.Vector2 facade for net472 (Widget.Size / Rectangle2D use it);
-         the game ships System.Numerics.Vectors.dll in bin, so compile-only (P-03) -->
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" IncludeAssets="compile" PrivateAssets="all" />
+    <!-- Vector2 MUST bind to the game's exact identity: System.Numerics.Vectors 4.1.3.0
+         (P-23). The framework facade System.Numerics 4.0.0.0 defines a referentially
+         DIFFERENT Vector2 that crashes every cross-assembly signature at JIT
+         (MissingMethodException on Widget.get_Size). So: no implicit System.Numerics,
+         no System.Numerics.Vectors NuGet (4.5.0 = asm 4.1.4.0, also wrong), reference
+         the game's own DLL compile-only (P-03). -->
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>$(GameFolder)\bin\Win64_Shipping_Client\System.Numerics.Vectors.dll</HintPath>
+      <Aliases>game</Aliases>
+      <Private>False</Private>
+    </Reference>
     <!-- game reference assemblies, pinned to the installed build -->
     <PackageReference Include="Bannerlord.ReferenceAssemblies.Core"    Version="$(GameVersion)" PrivateAssets="All" />
     <PackageReference Include="Bannerlord.ReferenceAssemblies.Native"  Version="$(GameVersion)" PrivateAssets="All" />
