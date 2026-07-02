@@ -35,7 +35,7 @@ read verbatim) and the BUTR template. **[LOCAL + template]**
   <DefaultModule value="false" />
   <ModuleCategory value="Singleplayer" />
   <ModuleType value="Community" />
-  <Url value="https://github.com/<owner>/bannerlord-diplomacy-overview" />
+  <Url value="https://github.com/sum117/bannerlord-diplomacy-overview" />
 
   <!-- Hard deps: the game refuses to load us without these (vanilla launcher semantics) -->
   <DependedModules>
