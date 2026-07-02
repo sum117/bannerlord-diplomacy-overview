@@ -29,6 +29,7 @@ namespace DiplomacyOverview
             _extender = UIExtender.Create("DiplomacyOverview");
             _extender.Register(typeof(SubModule).Assembly);
             _extender.Enable();
+            UI.Mixins.TracerDiag.Log("SubModule: UIExtender registered + enabled");
         }
     }
 }

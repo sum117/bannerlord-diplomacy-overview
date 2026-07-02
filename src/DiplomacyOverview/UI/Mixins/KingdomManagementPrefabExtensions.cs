@@ -39,8 +39,14 @@ namespace DiplomacyOverview.UI.Mixins
                 "VerticalAlignment=\"Center\" PositionYOffset=\"2\" Brush=\"Header.Tab.Center\" " +
                 "IsSelected=\"@RelationsSelected\" Command.Click=\"SelectRelations\" UpdateChildrenStates=\"true\">" +
                 "<Children>" +
-                "<TextWidget WidthSizePolicy=\"CoverChildren\" HeightSizePolicy=\"CoverChildren\" " +
+                // DataSource="{..}" mirrors the exact idiom of the two tab texts PROVEN to bind in
+                // this modlist (vanilla Fiefs + Diplomacy's Factions) — tracer run 2 evidence.
+                "<TextWidget DataSource=\"{..}\" WidthSizePolicy=\"CoverChildren\" HeightSizePolicy=\"CoverChildren\" " +
                 "HorizontalAlignment=\"Center\" VerticalAlignment=\"Center\" Brush=\"Clan.TabControl.Text\" Text=\"@RelationsText\" />" +
+                // Literal marker (no binding involved): locates the button visually even if the
+                // mixin-bound label fails again. Remove after the tracer.
+                "<TextWidget WidthSizePolicy=\"CoverChildren\" HeightSizePolicy=\"CoverChildren\" " +
+                "HorizontalAlignment=\"Right\" VerticalAlignment=\"Top\" MarginRight=\"4\" Brush=\"Clan.TabControl.Text\" Text=\"*\" />" +
                 "</Children>" +
                 "</ButtonWidget>");
             _nodes = new List<XmlNode> { button };

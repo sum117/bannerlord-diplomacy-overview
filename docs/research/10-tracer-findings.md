@@ -251,3 +251,50 @@ v1.3.15, BLSE installed.
 | B missing entirely but A works | Ship lines as rotated plain widgets; custom widget path needs the S1 runtime discrepancy diagnosed first |
 | A *and* B both broken | Fall back to stamped-dots lines (TutorialArrowWidget pattern, docs 04 §C technique 2) — dashed styles become the default look |
 | Tab never appears / screen breaks | Kingdom-tab shell **no-go** → standalone screen (docs 04 §B) using the P-10 recipe above |
+
+---
+
+## Addendum — tracer run 1 results (2026-07-02) and run-2 changes
+
+Run 1 (user's modded campaign, load order ends `…*Bannerlord.Diplomacy*…*DiplomacyOverview*`):
+tab appeared as an **empty, textless button** right of the Diplomacy tab; user read it as "no
+Relations tab". Diagnosis chain, all **[LOCAL]**:
+
+1. Module enabled + loaded (LauncherData, rgl_log `_MODULES_` args); UIExtenderEx logged our
+   runtime `Register → Register Types → Enabled` cleanly (`Configs\ModLogs\`).
+2. **Prefab patches APPLIED** — proven by flipping UIExtenderEx's `DumpXML` SubModule tag
+   (`Modules\Bannerlord.UIExtenderEx\SubModule.xml`, dumps to that module's `Dumps\` per runtime):
+   `KingdomManagement_DiplomacyOverview.xml` contains both our button (with its TextWidget child)
+   and our panel node. Constants resolve. The Diplomacy mod's own patches shift our button after
+   its Factions insertion (P-14, cosmetic, as designed).
+3. Therefore the failing layer is the **mixin binding** (`@RelationsText` empty ⇒ no label). No
+   errors anywhere — several UIExtenderEx failure paths are `MessageUtils.Fail` = silent in
+   release.
+4. Reference point: the **Diplomacy mod's Factions tab works in the same session and is a genuine
+   UIExtenderEx mixin** (`[ViewModelMixin]` no-arg; `FactionsLabel { get; set; }` assigned in
+   ctor; `[DataSourceMethod] ExecuteShowFactions`). So the mixin mechanism itself works on
+   v1.3.15 + UIExtenderEx 2.13.2. Decompile of `ViewModelExtensions.AddProperty` confirms the
+   per-instance copy-on-write against `ViewModel._propertiesAndMethods`/`_cachedViewModelProperties`
+   is 1.3.15-compatible.
+5. `DataSource="{..}"` on tab-button texts turns out to be a **vanilla idiom** (Fiefs/Policies use
+   it) that Diplomacy mirrors; at root context it appears to clamp to the root VM.
+
+**Run-2 tracer changes** (eliminate every delta vs the proven-working mixin at once, and
+instrument the seams):
+
+- Mixin now mirrors Diplomacy's exact shape: `[ViewModelMixin]` **without** refresh argument
+  (supersedes run 1's `"OnFrameTick"` hook — which is thereby *unproven, not validated*; the
+  deselect-on-vanilla-click concern moves to the production design, temporarily masked by panel
+  z-order like Diplomacy/BannerKings), `RelationsText` as a plain settable property assigned in
+  the ctor (was getter-only expression).
+- Button text mirrors the working XML idiom: `DataSource="{..}"`; plus a literal `*` marker
+  TextWidget (no binding) so the button is visually locatable regardless.
+- File instrumentation (`Configs\ModLogs\DiplomacyOverview-tracer.log`): SubModule enable, mixin
+  attach (+ VM runtime type — would expose a VM-subclass conflict), first binder read of
+  `RelationsText`, `SelectRelations` invocation.
+
+Run-2 decision matrix (replaces "no tab" row above): label shows → binding fixed, proceed to S2
+observations. Marker `*` shows but no label + log has "attached" but no "read" → binder never
+queries mixin props on this setup → escalate (root-cause in UIExtenderEx property injection).
+Log lacks "attached" → mixin never instantiated (check VM runtime type line / UIExtenderEx issue).
+Click logged but panel doesn't show → panel-side binding (`IsVisible="@RelationsSelected"`) next.
