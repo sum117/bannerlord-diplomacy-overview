@@ -126,3 +126,14 @@ identity must match the game's loaded identity exactly — decompiler output hid
 print "Vector2"). Related mitigation: keep risky tokens out of `OnRender` itself (JIT-time throws
 in a virtual the engine calls are uncatchable by you); put them in a child method wrapped in a
 self-disabling try/catch (AGENTS.md rule 6).
+
+**P-24 — `Kingdom.All` is not "the active kingdoms"; on modded lists it contains zombie kingdoms.**
+`Kingdom.All => Campaign.Current.Kingdoms => CampaignObjectManager.Kingdoms` **[LOCAL decompile]**
+holds every Kingdom object ever added, and only a proper `DestroyKingdomAction` sets
+`IsEliminated`. Mods add kingdoms freely: Separatism creates a first-class Kingdom per seceding
+clan and (with `KeepEmptyKingdoms`) intentionally keeps the clanless husk alive forever — a long
+campaign showed ~70 "kingdoms" where ~10 were real (doc 10 run 6). Filtering on `!IsEliminated`
+alone is wrong on exactly the mod lists we target. Filter for *participation*: at least one
+non-eliminated clan with a living leader (`KingdomFilter.IsParticipant`), and derive edge
+endpoints through the same predicate so stale zombie stances drop with their nodes. Corollary:
+never size UI to vanilla counts (8-ish kingdoms) — assume mods multiply campaign objects.

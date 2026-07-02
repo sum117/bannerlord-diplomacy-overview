@@ -378,3 +378,39 @@ fixed-index button drifted past the vanilla right end-cap (Diplomacy tab keeps
 `InsertType.Prepend` — index-free, immune to other mods' insertions (supersedes the Index=9
 approach; P-14 recommendation upgraded: **prefer anchor-relative Prepend/Append over Child+Index
 whenever a stable anchor exists**).
+
+## Addendum — run 6 (2026-07-02): #6 first in-game pass — node flood diagnosed, lines missing (instrumented)
+
+User screenshot (issue #6 thread): Relations tab opens, ~70 banner nodes on the circle with garbled
+overlapping labels, **no war lines**, banners render as flat pennant cards rather than the mock's
+circular medallions.
+
+**Node flood — root cause CONFIRMED from primary sources.** The launcher log revealed the real
+campaign runs a ~60-mod list including **Separatism**. Its decompile (installed DLL): every
+secession calls `MBObjectManager.CreateObject<Kingdom>(clan.GetKingdomId())` +
+`CampaignObjectManager.AddKingdom` — a real, first-class Kingdom per rebelling clan — and its
+`RemoveEmptyKingdoms` deliberately KEEPS a clan's empty "personal kingdom" alive when the
+`KeepEmptyKingdoms` setting is on (`k.RulingClan?.GetKingdomId() == k.StringId` exemption). A long
+campaign therefore accumulates dozens of live, clanless zombie kingdoms; `Kingdom.All`
+(= `CampaignObjectManager.Kingdoms`, decompile-verified) returns them all and `IsEliminated` is
+false. Fix shipped: `KingdomFilter.IsParticipant` — a node requires a living clan (leader alive);
+zombie stances then drop automatically via RelationGraph's unknown-endpoint rule. → **P-24.**
+
+**Missing lines — root cause NOT yet determined; every static suspect eliminated by decompile:**
+`GetDailyTributeToPay`/`WarStartDate` exist in the installed `StanceLink` (no JIT gap);
+`SetWidgetAttribute`/`GetObjectAndProperty` (TaleWorlds.GauntletUI.PrefabSystem decompile) is plain
+public-property reflection with **no `[Editor]` filtering** — bare auto-properties on custom
+widgets ARE bindable (Diplomacy's `[Editor(false)]` + `OnPropertyChanged` style is editor/state
+hygiene, not a binding requirement); RelationGraph/RelationEdge/GraphCanvas paths verified by
+re-read. Remaining candidates: (a) zero kingdom-vs-kingdom wars actually passing the filters in
+that campaign right now, (b) a mid-loop throw erased by the provider's formerly all-or-nothing
+catch. Both were indistinguishable because **every degraded path was silent** — the real lesson of
+this run. Shipped countermeasures: per-kingdom containment in WarProvider (one bad kingdom can no
+longer cost the whole web) and `Diagnostics.Note` breadcrumbs into rgl_log (rebuild counts, provider
+skips, edge-widget first-render coordinates, sprite availability). Run 7 = user reopens the tab
+once; the log then names the failing stage outright.
+
+**Medallion shape (cosmetic, deferred):** `Flat.Tuple.Banner.Small` is a flat pennant, not the
+mock's circular medallion; no vanilla circular banner-mask brush surfaced in a brush-name sweep.
+Options for the polish pass: a custom brush over vanilla mask sprites, or accepting the pennant
+look. Tracked for the legend/tooltip milestone, not #6.

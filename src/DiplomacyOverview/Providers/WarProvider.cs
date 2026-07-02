@@ -36,9 +36,10 @@ namespace DiplomacyOverview.Providers
             {
                 return BuildEdges();
             }
-            catch
+            catch (Exception ex)
             {
                 // AGENTS.md rule 6: a provider failure means missing lines, never a crash.
+                Diagnostics.Note("war provider failed outright: " + ex);
                 return Array.Empty<RelationEdge>();
             }
         }
@@ -54,33 +55,46 @@ namespace DiplomacyOverview.Providers
 
             foreach (var kingdom in Kingdom.All)
             {
-                if (kingdom is null || kingdom.IsEliminated)
+                // Containment is PER KINGDOM on purpose: on a heavy mod list one malformed
+                // kingdom object must cost its own edges, not the whole web (the #6 in-game
+                // pass ran against ~70 mod-created kingdoms — docs/research/10 run 6).
+                try
                 {
-                    continue;
-                }
-
-                var enemies = kingdom.FactionsAtWarWith;
-                if (enemies is null)
-                {
-                    continue;
-                }
-
-                foreach (var enemy in enemies)
-                {
-                    if (!(enemy is Kingdom other) || other.IsEliminated)
-                    {
-                        continue; // kingdom scope only: wars against clans/minors are out (issue #6)
-                    }
-
-                    // FactionsAtWarWith yields each war from both sides; keep the pair once.
-                    // (Also guards the self-loop RelationEdge.Create rejects.)
-                    if (string.CompareOrdinal(kingdom.StringId, other.StringId) >= 0)
+                    if (!KingdomFilter.IsParticipant(kingdom))
                     {
                         continue;
                     }
 
-                    edges.Add(RelationEdge.Create(
-                        kingdom.StringId, other.StringId, RelationKind.War, BuildDetails(kingdom, other)));
+                    var enemies = kingdom.FactionsAtWarWith;
+                    if (enemies is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var enemy in enemies)
+                    {
+                        // Kingdom scope only: wars against clans/minors are out (issue #6), and
+                        // zombie-kingdom endpoints are dropped by the same participant test.
+                        if (!(enemy is Kingdom other) || !KingdomFilter.IsParticipant(other))
+                        {
+                            continue;
+                        }
+
+                        // FactionsAtWarWith yields each war from both sides; keep the pair once.
+                        // (Also guards the self-loop RelationEdge.Create rejects.)
+                        if (string.CompareOrdinal(kingdom.StringId, other.StringId) >= 0)
+                        {
+                            continue;
+                        }
+
+                        edges.Add(RelationEdge.Create(
+                            kingdom.StringId, other.StringId, RelationKind.War, BuildDetails(kingdom, other)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Diagnostics.Note(
+                        "war edges skipped for kingdom '" + (kingdom?.StringId ?? "<null>") + "': " + ex.Message);
                 }
             }
 

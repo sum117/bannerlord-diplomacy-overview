@@ -31,6 +31,7 @@ namespace DiplomacyOverview.UI.Widgets
         private string _lineColorText = RelationPaletteDefaultColorText;
         private Color _lineColor = new Color(1f, 1f, 1f);
         private bool _renderBroken;
+        private bool _loggedFirstRender;
 
         // Neutral white; the VM always binds a real palette color over it.
         private const string RelationPaletteDefaultColorText = "#FFFFFFFF";
@@ -110,9 +111,22 @@ namespace DiplomacyOverview.UI.Widgets
 
         private void RenderEdge(TwoDimensionDrawContext drawContext)
         {
+            // One breadcrumb per widget lifetime: proves the widget instantiated AND shows the
+            // values the bindings delivered — an all-zero line here means "bindings never
+            // applied", no log at all means "no edge items existed". Both render as the same
+            // blank screen, which is exactly why this line exists.
+            if (!_loggedFirstRender)
+            {
+                _loggedFirstRender = true;
+                Diagnostics.Note(
+                    "edge widget rendering: (" + X1 + "," + Y1 + ")->(" + X2 + "," + Y2
+                    + ") thickness " + LineThickness + " color " + _lineColorText);
+            }
+
             Sprite sprite = Context.SpriteData.GetSprite(SpriteName);
             if (sprite?.Texture is null)
             {
+                Diagnostics.Note("edge sprite '" + SpriteName + "' unavailable — lines skipped.");
                 return; // sprite category not loaded in this screen — nothing to draw
             }
 

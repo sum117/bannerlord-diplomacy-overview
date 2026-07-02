@@ -134,8 +134,9 @@ namespace DiplomacyOverview.UI.ViewModels
             {
                 Rebuild();
             }
-            catch
+            catch (Exception ex)
             {
+                Diagnostics.Note("web rebuild failed, showing empty web: " + ex);
                 FinalizeNodeList(Nodes);
                 Nodes = new MBBindingList<RelationNodeVM>();
                 Edges = new MBBindingList<RelationEdgeVM>();
@@ -151,7 +152,10 @@ namespace DiplomacyOverview.UI.ViewModels
             {
                 foreach (var kingdom in Kingdom.All)
                 {
-                    if (kingdom is not null && !kingdom.IsEliminated)
+                    // Not merely !IsEliminated: Kingdom.All carries mod-created zombie kingdoms
+                    // (Separatism's per-clan personal kingdoms flooded the first #6 in-game pass
+                    // with ~70 nodes — docs/research/10 run 6). See KingdomFilter.
+                    if (KingdomFilter.IsParticipant(kingdom))
                     {
                         kingdoms.Add(kingdom);
                     }
@@ -209,6 +213,12 @@ namespace DiplomacyOverview.UI.ViewModels
             FinalizeNodeList(Nodes); // release the previous build's banner identifiers
             Nodes = nodeVms;
             Edges = edgeVms;
+
+            // One line per rebuild into rgl_log: the difference between "provider found no wars",
+            // "graph dropped the edges", and "VM never rebuilt" is invisible on screen.
+            Diagnostics.Note(
+                "web rebuilt: " + nodeVms.Count + " kingdoms, " + edgeVms.Count + " war lines ("
+                + edges.Count + " raw provider edges).");
         }
 
         private static ImageIdentifierVM? CreateBannerVisual(Kingdom kingdom)
