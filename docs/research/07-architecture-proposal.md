@@ -97,7 +97,7 @@ RelationsVM publishes MBBindingList<NodeVM>, MBBindingList<EdgeVM>, legend toggl
 | # | Question | Method | Status |
 |---|---|---|---|
 | S1 | How do module-shipped custom `Widget` classes register with `WidgetFactory`? | Minimal widget in M0 skeleton; if not auto-discovered, GABS/UIExtenderEx registration path | ✔ **Resolved (tracer #5)**: auto-discovery via `WidgetInfo.CollectWidgetTypes` AppDomain scan; public `(UIContext)` ctor required; doc 10 |
-| S2 | Does `Widget.Rotation` render child widgets sanely (pivot, hit-testing)? | Rotate a tinted `BlankWhiteSquare_9` child 30°; else fall back to `OnRender` `DrawSprite` (proven path) | ⏳ **Pending in-game** — both experiments deployed by tracer #5; manual script in doc 10 |
+| S2 | Does `Widget.Rotation` render child widgets sanely (pivot, hit-testing)? | Rotate a tinted `BlankWhiteSquare_9` child 30°; else fall back to `OnRender` `DrawSprite` (proven path) | ✔ **Resolved (tracer #5 run 5)**: BOTH techniques render correctly in-game (user screenshot); production uses OnRender canvas (doc 10). Also see P-22/P-23 for the two runtime traps found en route |
 | S3 | `UIExtender.Create/Register/Enable` exact v2.13.2 API | compile against package; mirror Diplomacy's SubModule.cs | ✔ **Resolved (tracer #5)**: pattern confirmed verbatim against installed DLL; corrections (2-arg attribute, Index counts comments, RefreshValues hook gap) in doc 10 |
 | S4 | BLSE `Standalone.exe` forwards `_MODULES_` args? | try once; else use vanilla exe for the debug profile | open |
 | S5 | UIExtenderEx `DumpXML` tag semantics | grep UIExtenderEx source | open (note: decompile shows `UIExtenderExSettings.Instance.DumpXML` gates a per-movie dump into the module's `Dumps\` folder) |

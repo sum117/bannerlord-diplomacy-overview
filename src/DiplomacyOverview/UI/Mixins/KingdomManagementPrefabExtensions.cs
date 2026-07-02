@@ -18,13 +18,15 @@ namespace DiplomacyOverview.UI.Mixins
     // they are cosmetic ordering only, nothing semantic hangs on them.
 
     /// <summary>
-    /// Inserts the Relations tab button into the tab strip. Index 9 lands before the
-    /// DiplomacyTabButton (node 9) in an unpatched document, keeping vanilla's right-end cap
-    /// brush (Header.Tab.Right) as the rightmost button. Attribute set mirrors the vanilla
-    /// center tabs; !Header.Tab.Center.* constants are declared at the top of the same prefab
-    /// document, so the spliced node can reference them.
+    /// Inserts the Relations tab button as the sibling immediately BEFORE the vanilla
+    /// DiplomacyTabButton (anchor-relative Prepend — immune to other mods shifting child
+    /// indices, P-14; run 5 showed a fixed index drifting past the right end-cap once the
+    /// Diplomacy mod's Factions insertion shifted the strip). Diplomacy keeps its
+    /// Header.Tab.Right end-cap as the rightmost button; ours renders mid-strip.
+    /// !Header.Tab.Center.* constants are declared at the top of the same prefab document,
+    /// so the spliced node can reference them.
     /// </summary>
-    [PrefabExtension("KingdomManagement", "descendant::KingdomTabControlListPanel[1]/Children")]
+    [PrefabExtension("KingdomManagement", "descendant::ButtonWidget[@Id='DiplomacyTabButton']")]
     internal sealed class KingdomManagementTabButtonExtension : PrefabExtensionInsertPatch
     {
         private readonly List<XmlNode> _nodes;
@@ -52,9 +54,7 @@ namespace DiplomacyOverview.UI.Mixins
             _nodes = new List<XmlNode> { button };
         }
 
-        public override InsertType Type => InsertType.Child;
-
-        public override int Index => 9;
+        public override InsertType Type => InsertType.Prepend;
 
         [PrefabExtensionXmlNodes]
         public IEnumerable<XmlNode> Nodes => _nodes;

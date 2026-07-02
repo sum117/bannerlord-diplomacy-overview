@@ -107,12 +107,20 @@ Framework targeting pack's `System.Numerics, 4.0.0.0` facade defines a structura
 **referentially different** `Vector2`, and the SDK references that facade implicitly — so
 `using System.Numerics;` silently compiles your code against the wrong identity and every
 cross-assembly signature containing it throws `MissingMethodException` at JIT (observed:
-`Widget.get_Size`). The `System.Numerics.Vectors` NuGet doesn't save you (4.5.0 = assembly
-4.1.4.0, still ≠ 4.1.3.0), and `<Reference Remove="System.Numerics"/>` can't beat the SDK's
-implicit reference (CS0433 at best). Working fix: reference the **game's own**
-`System.Numerics.Vectors.dll` (`Private=False`) with `<Aliases>game</Aliases>`, then in each
-Vector2-consuming file: `extern alias game;` + `using Vector2 = game::System.Numerics.Vector2;`.
-Verify by reading your DLL's AssemblyRef table (must show 4.1.3.0 and no `System.Numerics`).
+`Widget.get_Size`). The `System.Numerics.Vectors` NuGet is a minefield of forwarders: 4.5.0 = assembly 4.1.4.0
+(wrong version); 4.4.0 = 4.1.3.0 (right version) **but both its `ref/net46` AND `lib/net46`
+assemblies are type-forwarding facades on .NET Framework** (CS1069 back to the framework facade);
+`Aliases` on `PackageReference` doesn't flow on net472; `<Reference Remove="System.Numerics"/>`
+can't beat the SDK's implicit reference (CS0433 at best); and when a HintPath fails to resolve,
+MSBuild **silently** falls back to the targeting pack's forwarding facade. Working recipe
+(verified): a download-only `PackageReference` (`Version="4.4.0" ExcludeAssets="all"`) + an
+explicit `<Reference Include="System.Numerics.Vectors">` with `<Aliases>game</Aliases>`,
+`<Private>False</Private>`, and two conditional HintPaths — the **game's own DLL** when
+`$(GameFolder)` exists (runtime truth), else the package's **`lib/netstandard2.0`** build (cannot
+forward to framework DLLs ⇒ real types, same 4.1.3.0 identity) for game-less CI builds. Consuming
+files: `extern alias game;` + `using Vector2 = game::System.Numerics.Vector2;`. Always verify by
+reading your DLL's AssemblyRef table (must show `System.Numerics.Vectors 4.1.3.0` and no
+`System.Numerics`).
 Corollary of the general rule: for any type appearing in game API *signatures*, your compiled
 identity must match the game's loaded identity exactly — decompiler output hides this (both sides
 print "Vector2"). Related mitigation: keep risky tokens out of `OnRender` itself (JIT-time throws

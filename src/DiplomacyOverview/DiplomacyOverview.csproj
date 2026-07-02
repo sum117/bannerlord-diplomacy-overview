@@ -24,8 +24,18 @@
          (MissingMethodException on Widget.get_Size). So: no implicit System.Numerics,
          no System.Numerics.Vectors NuGet (4.5.0 = asm 4.1.4.0, also wrong), reference
          the game's own DLL compile-only (P-03). -->
+    <!-- download-only: supplies the CI fallback path below (package 4.4.0 = assembly 4.1.3.0,
+         verified identical to the game-shipped identity). Aliases on PackageReference does not
+         flow on net472, hence the explicit Reference. -->
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" ExcludeAssets="all" />
     <Reference Include="System.Numerics.Vectors">
-      <HintPath>$(GameFolder)\bin\Win64_Shipping_Client\System.Numerics.Vectors.dll</HintPath>
+      <HintPath Condition="Exists('$(GameFolder)\bin\Win64_Shipping_Client\System.Numerics.Vectors.dll')">$(GameFolder)\bin\Win64_Shipping_Client\System.Numerics.Vectors.dll</HintPath>
+      <!-- netstandard2.0, not ref/net46 or lib/net46: BOTH of those are type-forwarding facades
+           on .NET Framework (forward Vector2 back to the framework's System.Numerics — CS1069).
+           The netstandard2.0 build cannot forward to framework DLLs, so it carries the real
+           types under the same 4.1.3.0 identity. The game's own DLL (dev path above) is the
+           runtime truth; this fallback only serves game-less builds (CI). -->
+      <HintPath Condition="!Exists('$(GameFolder)\bin\Win64_Shipping_Client\System.Numerics.Vectors.dll')">$(NuGetPackageRoot)system.numerics.vectors\4.4.0\lib\netstandard2.0\System.Numerics.Vectors.dll</HintPath>
       <Aliases>game</Aliases>
       <Private>False</Private>
     </Reference>

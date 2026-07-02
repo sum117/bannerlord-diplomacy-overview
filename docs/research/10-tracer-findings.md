@@ -356,3 +356,25 @@ crash class can never take down the screen again. Verified post-fix: build green
 the module's AssemblyRef table shows `System.Numerics.Vectors 4.1.3.0` with no `System.Numerics`.
 
 S2 remains the only open observation — same manual script, one more run.
+
+## Addendum — run 5 (2026-07-02): S2 RESOLVED — both line techniques work; shell = GO
+
+User screenshot (posted on issue #5 thread): Relations tab visible, selected, labeled; panel
+rendering; **experiment A**: red strip rotated 30° clockwise from the shared origin next to the
+unrotated gold control — **XML `Rotation` works**, sign convention = clockwise in Y-down screen
+space, default pivot top-left, exactly as modeled; **experiment B**: gray border correct, green
+line connecting the two gold marker centers dead-on — **OnRender + `Rectangle2D.LocalRotation` +
+`DrawSprite` fully validated** (position, angle, scale, pivot math, tint, `_scaleToUse` handling).
+
+**Verdicts:** S2 ✔ both techniques viable; production graph canvas uses technique B (one widget
+drawing all edges in OnRender, per docs 04 §C ranking); technique A remains available for simple
+cases. **Kingdom-tab shell: GO** (docs 04 §A) — the standalone-screen fallback stays documented
+but unneeded.
+
+Cosmetic finding: with the Diplomacy mod's Factions insertion shifting strip indices, our
+fixed-index button drifted past the vanilla right end-cap (Diplomacy tab keeps
+`Header.Tab.Right`), rendering visually detached. Fix: anchor-relative insertion —
+`[PrefabExtension("KingdomManagement", "descendant::ButtonWidget[@Id='DiplomacyTabButton']")]` +
+`InsertType.Prepend` — index-free, immune to other mods' insertions (supersedes the Index=9
+approach; P-14 recommendation upgraded: **prefer anchor-relative Prepend/Append over Child+Index
+whenever a stable anchor exists**).
