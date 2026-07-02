@@ -22,27 +22,14 @@ namespace DiplomacyOverview.UI.ViewModels
     internal sealed class RelationsVM : ViewModel
     {
         // ---- Design-space geometry -------------------------------------------------------------
-        // The canvas is a fixed-size widget centered in the panel; these constants MUST stay in
-        // sync with the <Constants> block of DiplomacyOverviewRelationsPanel.xml.
+        // The canvas is a fixed-size widget centered in the panel; its dimensions MUST stay in
+        // sync with the <Constants> block of DiplomacyOverviewRelationsPanel.xml. Everything else
+        // (circle radius, node/banner sizes, label visibility, edge trim/thickness) is computed
+        // per rebuild by WebDensity from the live node count — real modded campaigns hold 80+
+        // living kingdoms (docs/research/10 run 7, P-24) and fixed vanilla-count sizing fuses the
+        // web into a solid ring.
         public const float CanvasWidth = 1400f;
         public const float CanvasHeight = 800f;
-
-        /// <summary>Node circle radius. 310 leaves label room: top box edge at y=47, bottom at 795.</summary>
-        private const double CircleRadius = 310.0;
-
-        /// <summary>Edge-trim radius around each medallion center (banner is ~75x86 design px).</summary>
-        private const double NodeTrimRadius = 46.0;
-
-        // Node box: 170x128 with the ~75x86 banner centered horizontally at the top and the name
-        // label underneath — mirrored by the prefab's node ItemTemplate. The banner center inside
-        // the box is the node's layout center.
-        private const float NodeCenterOffsetX = 85f;
-        private const float NodeCenterOffsetY = 43f;
-
-        private const float EdgeThickness = 4f;
-
-        private static readonly GraphCanvasSpec CanvasSpec =
-            new GraphCanvasSpec(CanvasWidth, CanvasHeight, CircleRadius, NodeTrimRadius);
 
         // ---- State -------------------------------------------------------------------------------
 
@@ -181,9 +168,13 @@ namespace DiplomacyOverview.UI.ViewModels
                 edges.AddRange(provider.GetEdges()); // never throws, per contract
             }
 
+            // Size the web to the actual world, then project (docs/research/10 run 7).
+            var density = WebDensity.Compute(nodeIds.Count, CanvasWidth, CanvasHeight);
+            var spec = new GraphCanvasSpec(CanvasWidth, CanvasHeight, density.CircleRadius, density.TrimRadius);
+
             // RelationGraph dedups edges and drops any edge whose endpoint is not a node.
             var graph = new RelationGraph(nodeIds, edges);
-            var layout = GraphCanvas.Compute(graph, in CanvasSpec);
+            var layout = GraphCanvas.Compute(graph, in spec);
 
             var nodeVms = new MBBindingList<RelationNodeVM>();
             foreach (var node in layout.Nodes)
@@ -193,8 +184,13 @@ namespace DiplomacyOverview.UI.ViewModels
                     node.NodeId,
                     kingdom.Name?.ToString() ?? node.NodeId,
                     CreateBannerVisual(kingdom),
-                    (float)node.CenterX - NodeCenterOffsetX,
-                    (float)node.CenterY - NodeCenterOffsetY));
+                    (float)(node.CenterX - density.NodeCenterOffsetX),
+                    (float)(node.CenterY - density.NodeCenterOffsetY),
+                    (float)density.NodeBoxWidth,
+                    (float)density.NodeBoxHeight,
+                    (float)density.BannerWidth,
+                    (float)density.BannerHeight,
+                    density.ShowLabels));
             }
 
             var edgeVms = new MBBindingList<RelationEdgeVM>();
@@ -207,7 +203,7 @@ namespace DiplomacyOverview.UI.ViewModels
                     (float)edge.X2,
                     (float)edge.Y2,
                     RelationPalette.ColorOf(edge.Edge.Kind),
-                    EdgeThickness));
+                    (float)density.EdgeThickness));
             }
 
             FinalizeNodeList(Nodes); // release the previous build's banner identifiers
@@ -218,7 +214,9 @@ namespace DiplomacyOverview.UI.ViewModels
             // "graph dropped the edges", and "VM never rebuilt" is invisible on screen.
             Diagnostics.Note(
                 "web rebuilt: " + nodeVms.Count + " kingdoms, " + edgeVms.Count + " war lines ("
-                + edges.Count + " raw provider edges).");
+                + edges.Count + " raw provider edges); node scale "
+                + density.NodeScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
+                + ", labels " + (density.ShowLabels ? "on" : "off") + ".");
         }
 
         private static ImageIdentifierVM? CreateBannerVisual(Kingdom kingdom)

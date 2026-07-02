@@ -414,3 +414,39 @@ once; the log then names the failing stage outright.
 mock's circular medallion; no vanilla circular banner-mask brush surfaced in a brush-name sweep.
 Options for the polish pass: a custom brush over vanilla mask sprites, or accepting the pennant
 look. Tracked for the legend/tooltip milestone, not #6.
+
+## Addendum — run 7 (2026-07-02): breadcrumbs land — pipeline PROVEN, density was the bug
+
+The instrumented run answered everything in three log lines:
+
+```
+DiplomacyOverview: web rebuilt: 82 kingdoms, 5 war lines (5 raw provider edges).
+DiplomacyOverview: edge widget rendering: (711.87,90.45)->(711.87,90.45) thickness 4 color #C0392BFF
+  (×5, every edge start == end)
+```
+
+**Verdicts.** (1) The full pipeline works: provider → graph → layout → VM → **custom-widget
+bindings deliver real values** → OnRender runs. The "unproven binding path" fear from run 6 is
+retired — bare auto-properties on a custom widget receive VM float/string bindings exactly as the
+PrefabSystem decompile predicted. (2) The world legitimately holds **82 living kingdoms** (the
+living-clan filter is active; these are not husks — Separatism shattered the map into one-clan
+kingdoms), and genuinely had only 5 kingdom-vs-kingdom wars. (3) All 5 wars were between
+circle-adjacent kingdoms (secession chains are adjacent in creation order); at 82 nodes the arc
+spacing (~24 px) is below 2× the 46 px medallion trim, so the midpoint clamp correctly degenerated
+every line to zero length — computed, delivered, geometrically annihilated. The medallions
+themselves (170 px boxes on 24 px spacing) fused into the solid banner ring in the screenshots.
+
+**Fix: adaptive density (Core `WebDensity`, unit-tested).** Per rebuild, from the live node count:
+labeled mode (≤ ~20 nodes) keeps full-size boxes and grows the radius to the canvas cap; dense
+mode drops labels (atWar-style chip ring), solves the banner scale that exactly fills the largest
+fitting circle (82 nodes → scale ≈ 0.34, R ≈ 370), and scales the edge trim with the medallion
+(46 px → ~18 px), which un-degenerates mid-range wars. Node/banner dimensions and label visibility
+became per-node VM bindings (`SuggestedWidth="@BannerWidth"` etc.); the banner needed a sizing
+wrapper widget because the masked widget re-scopes onto {Banner} where those properties don't
+exist (`@..\` parent paths have zero vanilla precedent — avoided). Adjacent-node wars remain
+invisible at max density (touching chips leave no room for a line) — geometrically honest;
+node-border war tinting is a candidate for the legend/tooltip pass.
+
+**Meta-lesson (now practice):** silent degradation cost two user runs; one `Diagnostics.Note`
+line answered in seconds what four hours of static analysis could not. Every stage of this mod
+must leave a breadcrumb (kept: rebuild counts + scale/label state per rebuild).

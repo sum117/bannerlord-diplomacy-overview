@@ -6,10 +6,11 @@
   IsVisible="@IsSelected" is the exact vanilla panel idiom (ArmiesPanel root binds IsVisible="@Show"
   against its DataSource="{Army}" scope). Prefab file name = XML element name (global namespace, P-11).
 
-  Layout: a fixed 1400x800 design-space canvas centered in the panel. Coordinates bound from the VM
-  (node PositionX/YOffset, edge X1..Y2) are design pixels inside this canvas — the canvas size and
-  the node box geometry (170x128 box, banner centered at (85,43)) MUST stay in sync with the
-  constants at the top of RelationsVM.cs.
+  Layout: a fixed 1400x800 design-space canvas centered in the panel; only the canvas size is a
+  constant here (kept in sync with RelationsVM). Everything density-dependent — node box and banner
+  dimensions, label visibility, edge endpoints/thickness — is BOUND from the VM, computed per
+  rebuild by Core's WebDensity: real modded campaigns hold 80+ living kingdoms (docs/research/10
+  run 7, P-24), where fixed vanilla-count sizing fuses the web into a solid ring.
 
   Collection binding is the nameplate/map-trackers idiom (vanilla MapTrackers.xml): a plain
   stretched Widget with DataSource="{List}" + ItemTemplate creates one free-positioned child per
@@ -19,15 +20,6 @@
   <Constants>
     <Constant Name="Canvas.Width" Value="1400" />
     <Constant Name="Canvas.Height" Value="800" />
-
-    <Constant Name="NodeBox.Width" Value="170" />
-    <Constant Name="NodeBox.Height" Value="128" />
-
-    <!-- banner_tuple natural size is 136x173; scaled to ~75x86 like vanilla map trackers -->
-    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
-    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
-    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.55" Value="!Banner.Width" />
-    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.50" Value="!Banner.Height" />
 
     <Constant Name="NodeLabel.MarginTop" Value="90" />
   </Constants>
@@ -52,13 +44,21 @@
               </ItemTemplate>
             </Widget>
 
-            <!-- Nodes (over the edges): banner medallion + name label, freely positioned -->
+            <!-- Nodes (over the edges): banner medallion + optional name label, freely positioned;
+                 all dimensions arrive density-scaled from RelationNodeVM -->
             <Widget DataSource="{Nodes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!NodeBox.Width" SuggestedHeight="!NodeBox.Height" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotAcceptEvents="true">
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotAcceptEvents="true">
                   <Children>
-                    <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="Flat.Tuple.Banner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                    <!-- Sizing wrapper: binds the density-scaled banner dims in the NODE's scope,
+                         because the masked widget itself re-scopes onto {Banner} where those
+                         properties do not exist -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true">
+                      <Children>
+                        <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Flat.Tuple.Banner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+                      </Children>
+                    </Widget>
+                    <TextWidget IsVisible="@ShowLabel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
                   </Children>
                 </Widget>
               </ItemTemplate>
