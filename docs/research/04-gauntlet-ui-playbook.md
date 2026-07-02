@@ -56,6 +56,13 @@ internal sealed class KingdomManagementMixin : BaseViewModelMixin<KingdomManagem
 }
 ```
 
+> **[TRACER #5 correction]** The `"RefreshValues"` hook above has a latent gap: vanilla tab
+> clicks run `ExecuteShowX → SetSelectedCategory`, which only flips the `Show` bools and never
+> calls `RefreshValues` — so this `OnRefresh` does **not** fire on the very interaction it
+> handles (BannerKings masks the resulting stale state via panel z-order). The tracer hooks
+> `[ViewModelMixin("OnFrameTick")]` instead (`GauntletKingdomScreen.OnFrameTick` calls
+> `DataSource.OnFrameTick()` every frame). Details + trade-offs: doc 10.
+
 2. **Prefab extensions** — insert the button into the tab strip and the panel into the screen:
 
 ```csharp
@@ -88,7 +95,9 @@ internal sealed class TabPanelExtension : PrefabExtensionInsertPatch
 
 3. **Registration** in `SubModule` (`MBSubModuleBase`):
    `_extender = UIExtender.Create("DiplomacyOverview"); _extender.Register(typeof(SubModule).Assembly); _extender.Enable();`
-   **[WEB: UIExtenderEx README pattern — verify exact overloads against v2.13.2 at spike time]**
+   **[LOCAL — S3 resolved by tracer #5: exact surface confirmed against the installed 2.13.2 DLL
+   and the shipping Diplomacy mod's `OnSubModuleLoad`; `PrefabExtensionAttribute` is 2-arg
+   `(movie, xpath)`, insert patches need a parameterless ctor. Doc 10.]**
 
 Key insight: the vanilla `KingdomTabControlListPanel` never needs patching — it only manages its own
 five pairs; our button drives selection purely through VM state, and `OnRefresh` handles the
@@ -97,6 +106,12 @@ five pairs; our button drives selection purely through VM state, and `OnRefresh`
 Note on `Index`: insertion indices are evaluated against the *current* (possibly already-patched)
 XML, so ordering vs other mods is load-order-dependent. Cosmetic-only issue for a tab strip; don't
 rely on absolute positions for anything semantic.
+
+> **[TRACER #5 correction]** `Index` counts the anchor's **raw `XmlNode` children — comments
+> included** (decompiled `PrefabComponent.InsertAsChild`; `index >= count` appends at the end).
+> The vanilla tab strip is comment-interleaved, so its 5 buttons occupy nodes 1,3,5,7,9 — the
+> sketch's `Index => 5` lands mid-strip, not "after the 5 buttons". Node tables for both anchors:
+> doc 10.
 
 ## B. Fallback shell: standalone screen
 
@@ -138,10 +153,12 @@ Ground truth from decompiled v1.3.15 **[LOCAL]**:
    distinct line *styles* (e.g. dashed = non-aggression pact) help colorblind users.
 3. Canned-art diagonals — unsuitable for arbitrary angles; ignore.
 
-**Custom widget registration:** Gauntlet resolves XML element names to `Widget` subclasses via its
-`WidgetFactory`; UIExtenderEx/GABS document custom-widget registration. Exact mechanism for
-module-shipped widgets (auto-discovery of loaded SubModule assemblies vs explicit
-`WidgetFactory` registration) = **spike S1**. **[WEB: [GABS gauntlet-ui.md](https://github.com/BUTR/Bannerlord.GABS/blob/master/docs/gauntlet-ui.md); UNVERIFIED]**
+**Custom widget registration:** **S1 resolved by tracer #5 — auto-discovery.** `WidgetInfo.
+CollectWidgetTypes` scans every AppDomain assembly referencing `TaleWorlds.GauntletUI` for
+`Widget` subclasses; `WidgetFactory.Initialize` maps them by bare class name; module assemblies
+load before any `OnSubModuleLoad` runs. Contract: public class + public `(UIContext)` ctor,
+nothing to register. (UIExtenderEx 2.13.2's `WidgetFactoryManager.Register(Type)` silently
+no-ops on v1.3.15 — it reflects a renamed `WidgetInfo.Reload` method.) **[LOCAL — doc 10]**
 Prefix widget class names uniquely (`DiplomacyOverview…Widget`) — element names are global.
 
 ## D. Banner medallion nodes

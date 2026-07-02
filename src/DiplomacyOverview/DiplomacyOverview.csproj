@@ -18,6 +18,9 @@
     <!-- compile-time refs; never shipped (their modules provide them at runtime) -->
     <PackageReference Include="Lib.Harmony" Version="2.3.3" IncludeAssets="compile" />
     <PackageReference Include="Bannerlord.UIExtenderEx" Version="2.13.2" IncludeAssets="compile" />
+    <!-- System.Numerics.Vector2 facade for net472 (Widget.Size / Rectangle2D use it);
+         the game ships System.Numerics.Vectors.dll in bin, so compile-only (P-03) -->
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" IncludeAssets="compile" PrivateAssets="all" />
     <!-- game reference assemblies, pinned to the installed build -->
     <PackageReference Include="Bannerlord.ReferenceAssemblies.Core"    Version="$(GameVersion)" PrivateAssets="All" />
     <PackageReference Include="Bannerlord.ReferenceAssemblies.Native"  Version="$(GameVersion)" PrivateAssets="All" />

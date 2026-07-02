@@ -35,6 +35,7 @@ already visible on NuGet/Nexus in mid-2026 — see doc 01).
 | [07-architecture-proposal.md](07-architecture-proposal.md) | Proposed module layout, provider pattern, VM/widget design, perf budget, milestones & spikes |
 | [08-pitfalls-gotchas.md](08-pitfalls-gotchas.md) | Numbered trap list (stale tutorials, removed APIs, packaging mistakes…) |
 | [09-design-reference-mapping.md](09-design-reference-mapping.md) | Mockup → widget mapping, client-request traceability, v1 scope recommendation |
+| [10-tracer-findings.md](10-tracer-findings.md) | Issue #5 tracer verdicts: S1/S3 resolved (decompile evidence), S2 manual test script, corrections to docs 04/07 |
 
 ## Provenance & confidence legend
 
