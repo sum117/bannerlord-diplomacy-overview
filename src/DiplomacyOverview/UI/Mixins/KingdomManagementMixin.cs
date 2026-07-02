@@ -3,6 +3,7 @@ using System.IO;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace DiplomacyOverview.UI.Mixins
