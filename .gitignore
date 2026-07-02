@@ -1,0 +1,23 @@
+# .NET / build outputs
+bin/
+obj/
+artifacts/
+*.binlog
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# local scratch — decompiled game/mod sources must never be committed (see AGENTS.md rule 3)
+scratch/
+decompiled/
+
+# OS noise
+Thumbs.db
+.DS_Store
