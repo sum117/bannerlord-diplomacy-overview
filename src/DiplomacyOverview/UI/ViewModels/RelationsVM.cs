@@ -172,8 +172,14 @@ namespace DiplomacyOverview.UI.ViewModels
             var density = WebDensity.Compute(nodeIds.Count, CanvasWidth, CanvasHeight);
             var spec = new GraphCanvasSpec(CanvasWidth, CanvasHeight, density.CircleRadius, density.TrimRadius);
 
+            // Reorder nodes so related factions land on opposite sides of the ring: in raw campaign
+            // order rivals like a rebel kingdom and the parent it split from are adjacent, so their
+            // war line degenerates to a stub under the medallions (docs/research/10 runs 7–8). This
+            // seats each matched war on an antipodal diameter — a full line across the ring.
+            var arrangedIds = CircularArrangement.Arrange(nodeIds, edges);
+
             // RelationGraph dedups edges and drops any edge whose endpoint is not a node.
-            var graph = new RelationGraph(nodeIds, edges);
+            var graph = new RelationGraph(arrangedIds, edges);
             var layout = GraphCanvas.Compute(graph, in spec);
 
             var nodeVms = new MBBindingList<RelationNodeVM>();
