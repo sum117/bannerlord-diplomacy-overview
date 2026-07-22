@@ -4,7 +4,7 @@
     <Platforms>x64</Platforms>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
     <ModuleId>DiplomacyOverview</ModuleId>
     <ModuleName>DiplomacyOverview</ModuleName>
     <GameFolder>$(BANNERLORD_GAME_DIR)</GameFolder>
