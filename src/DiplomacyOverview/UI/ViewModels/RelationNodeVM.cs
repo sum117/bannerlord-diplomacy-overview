@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
@@ -9,11 +10,12 @@ namespace DiplomacyOverview.UI.ViewModels
     /// dimensions (WebDensity) — all in canvas design pixels, bound onto the item widgets
     /// (PositionX/YOffset + SuggestedWidth/Height; nameplate-style free positioning). Labels
     /// switch off wholesale on dense worlds. Values are fixed at construction; rebuilds replace
-    /// the whole VM.
+    /// the whole VM. Clicking the node box opens the faction's encyclopedia page (#10).
     /// </summary>
     internal sealed class RelationNodeVM : ViewModel
     {
         private readonly string _name;
+        private readonly string? _encyclopediaLink;
         private readonly ImageIdentifierVM? _banner;
         private readonly float _x;
         private readonly float _y;
@@ -26,6 +28,7 @@ namespace DiplomacyOverview.UI.ViewModels
         public RelationNodeVM(
             string nodeId,
             string name,
+            string? encyclopediaLink,
             ImageIdentifierVM? banner,
             float x,
             float y,
@@ -37,6 +40,7 @@ namespace DiplomacyOverview.UI.ViewModels
         {
             NodeId = nodeId;
             _name = name;
+            _encyclopediaLink = encyclopediaLink;
             _banner = banner;
             _x = x;
             _y = y;
@@ -79,6 +83,27 @@ namespace DiplomacyOverview.UI.ViewModels
         /// <summary>False on dense worlds — names collide faster than they inform (WebDensity).</summary>
         [DataSourceProperty]
         public bool ShowLabel => _showLabel;
+
+        /// <summary>
+        /// Opens this faction's encyclopedia page over the kingdom screen — the vanilla link
+        /// pattern (HeroVM.ExecuteLink, decompiled v1.4.7). Bound to the node box's Command.Click.
+        /// </summary>
+        public void ExecuteOpenEncyclopedia()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_encyclopediaLink) || Campaign.Current is null) // P-07
+                {
+                    return;
+                }
+
+                Campaign.Current.EncyclopediaManager.GoToLink(_encyclopediaLink);
+            }
+            catch
+            {
+                // Rule 6: a dead link costs the click, never the screen.
+            }
+        }
 
         public override void OnFinalize()
         {

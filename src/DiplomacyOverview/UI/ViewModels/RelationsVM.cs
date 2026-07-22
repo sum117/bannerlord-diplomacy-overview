@@ -189,6 +189,7 @@ namespace DiplomacyOverview.UI.ViewModels
                 nodeVms.Add(new RelationNodeVM(
                     node.NodeId,
                     kingdom.Name?.ToString() ?? node.NodeId,
+                    GetEncyclopediaLink(kingdom),
                     CreateBannerVisual(kingdom),
                     (float)(node.CenterX - density.NodeCenterOffsetX),
                     (float)(node.CenterY - density.NodeCenterOffsetY),
@@ -237,6 +238,19 @@ namespace DiplomacyOverview.UI.ViewModels
             catch
             {
                 return null; // medallion frame renders empty; name label still identifies the node
+            }
+        }
+
+        private static string? GetEncyclopediaLink(Kingdom kingdom)
+        {
+            try
+            {
+                // The getter itself dereferences Campaign.Current (decompiled v1.4.7).
+                return kingdom.EncyclopediaLink;
+            }
+            catch
+            {
+                return null; // the node just loses its click-through
             }
         }
 

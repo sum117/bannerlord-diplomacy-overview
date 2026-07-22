@@ -45,10 +45,12 @@
             </Widget>
 
             <!-- Nodes (over the edges): banner medallion + optional name label, freely positioned;
-                 all dimensions arrive density-scaled from RelationNodeVM -->
+                 all dimensions arrive density-scaled from RelationNodeVM. The item root is a
+                 brushless ButtonWidget: clicking anywhere in the node box opens the faction's
+                 encyclopedia page (#10) -->
             <Widget DataSource="{Nodes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotAcceptEvents="true">
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotPassEventsToChildren="true" Command.Click="ExecuteOpenEncyclopedia">
                   <Children>
                     <!-- Sizing wrapper: binds the density-scaled banner dims in the NODE's scope,
                          because the masked widget itself re-scopes onto {Banner} where those
@@ -60,7 +62,7 @@
                     </Widget>
                     <TextWidget IsVisible="@ShowLabel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
                   </Children>
-                </Widget>
+                </ButtonWidget>
               </ItemTemplate>
             </Widget>
 
