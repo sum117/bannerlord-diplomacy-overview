@@ -8,10 +8,7 @@ to jump to its encyclopedia page. No relation, no line.
 Inspired by the diplomacy web in *atWar*. **Reads your campaign, never touches it** — safe to add or
 remove mid-campaign, writes nothing into your saves.
 
-![Design reference](docs/images/diplomacy-overview-design-reference.png)
-
-> _The image above is the original design reference. See the [Nexus page](#links) for screenshots of
-> the mod in-game._
+![Diplomacy Overview — the Relations tab on the Clan screen](https://i.imgur.com/3xM0aUM.png)
 
 ## Features
 
@@ -56,6 +53,11 @@ cleanly with other mods and is save-safe. Built and verified against vanilla v1.
 - **Broader compat pass** — Realm of Thrones / BannerKings verification
   ([#12](https://github.com/sum117/bannerlord-diplomacy-overview/issues/12)).
 
+## Support
+
+Diplomacy Overview is free and always will be. If it made your campaigns nicer and you'd like to say
+thanks, you can [buy me a coffee on Ko-fi](https://ko-fi.com/sum117) — appreciated, never required.
+
 ## Links
 
 - **Nexus Mods** — _page in setup_
@@ -70,3 +72,7 @@ C# targeting net472 / x64. Build with `dotnet build DiplomacyOverview.sln -c Deb
 your game's `Modules\` when `BANNERLORD_GAME_DIR` is set). See [AGENTS.md](AGENTS.md) for build
 commands, hard rules, and conventions, and [docs/research/](docs/research/README.md) for the full
 technical background.
+
+## License
+
+Released under the [MIT License](LICENSE).
