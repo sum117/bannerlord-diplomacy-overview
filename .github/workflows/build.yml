@@ -27,9 +27,8 @@ jobs:
       - name: Build
         run: dotnet build DiplomacyOverview.sln -c Release
 
-      # No test projects exist yet (verified locally: `dotnet test` on this sln with zero test
-      # projects exits 0 and runs nothing). Kept here so CI starts failing the moment a real test
-      # project is added and its tests break.
+      # Runs DiplomacyOverview.Tests (net10.0 — same runtime the pinned SDK above ships, so the
+      # run does not depend on legacy runtimes preinstalled on the runner image).
       - name: Test
         run: dotnet test DiplomacyOverview.sln -c Release --no-build
 

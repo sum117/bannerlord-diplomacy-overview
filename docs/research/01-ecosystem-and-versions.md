@@ -6,9 +6,10 @@
   (module `NavalDLC` v1.1.3, `ModuleType=OfficialOptional`, `RequiredBaseVersion v1.3.15`). **[LOCAL]**
 - **A 1.4.x branch exists** by mid-2026: `Bannerlord.ReferenceAssemblies.Core 1.4.5.114927` is
   published on NuGet and a "Vanilla 1.4.5 Plus Modding Notes" page exists
-  ([Nexus mods/11354](https://www.nexusmods.com/mountandblade2bannerlord/mods/11354)). Since this
-  Steam install auto-updates and still shows 1.3.15, treat 1.4.x as beta/next branch. **Pin 1.3.15
-  exactly; do not float wildcards across the minor.** **[WEB]**
+  ([Nexus mods/11354](https://www.nexusmods.com/mountandblade2bannerlord/mods/11354)). **[WEB]**
+  - **UPDATE 2026-07-22: 1.4.x is now the live branch — this Steam install runs v1.4.7.117484**, and
+    all pins were bumped to match (doc 11). The rest of this doc describes the 1.3.15 state it was
+    researched against; the pin-exactly rule stands, now at `1.4.7.117484`. **[LOCAL]**
 - Runtime: only `bin\Win64_Shipping_Client` exists here → the classic **.NET Framework** client.
   Mods target **net472**. `net6` targets exist only for the Xbox/Microsoft Store build
   (`Gaming.Desktop.x64_Shipping_Client`), which the BUTR template supports via multi-targeting —

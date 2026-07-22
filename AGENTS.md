@@ -7,20 +7,24 @@ state, never mutates it, and writes nothing into save files.
 
 ## Repo state
 
-Bootstrap phase — research docs only, **no code yet**. Before implementing anything, read
-`docs/research/README.md` (index + provenance legend). Follow the architecture in
-`docs/research/07-architecture-proposal.md`; burn down its spike list (S1–S5) before building on
-unverified assumptions. The trap list is `docs/research/08-pitfalls-gotchas.md` — cite entries as
-`P-xx` in commits/reviews.
+Implementation phase — `src/` holds the module (main + pure `Core` + xunit tests). Spikes S1–S3 are
+resolved (doc 10); S4/S5 remain open. Current slice: issue #6 (kingdom war web). Before implementing
+anything, read `docs/research/README.md` (index + provenance legend) and the game-1.4.7 migration
+record in `docs/research/11-game-1.4.7-migration.md`. Follow the architecture in
+`docs/research/07-architecture-proposal.md`. The trap list is `docs/research/08-pitfalls-gotchas.md`
+— cite entries as `P-xx` in commits/reviews.
 
 ## Environment ground truth (dev machine)
 
 - Game: Steam, `C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord`,
-  **v1.3.15 + War Sails DLC** (NavalDLC v1.1.3). BLSE launcher installed.
-- Builds expect env var `BANNERLORD_GAME_DIR` = the path above.
-- Installed framework mods (our compat baseline): Harmony 2.4.2.225, ButterLib 2.10.4,
-  UIExtenderEx 2.13.2, MCM 5.11.4, Diplomacy mod 1.3.3.
-- .NET SDK 10 is installed; the mod targets **net472 / x64** (see `docs/research/03` for the csproj).
+  **v1.4.7 (changeset 117484) + War Sails DLC** (NavalDLC v1.2.7). BLSE launcher installed.
+  (Machine reformatted + game updated 2026-07 — delta record in `docs/research/11`.)
+- Builds expect env var `BANNERLORD_GAME_DIR` = the path above (set at User scope).
+- Installed framework mods (our compat baseline): Harmony 2.4.2.248, ButterLib 2.11.1,
+  UIExtenderEx 2.13.3, MCM 5.12.2. **Diplomacy mod currently NOT installed** (blocks local testing
+  of the NAP adapter, issue #9).
+- .NET SDK 10 is installed (runtimes 9/10 only — the test project targets net10.0); the mod targets
+  **net472 / x64** (see `docs/research/03` for the csproj).
 
 ## Build / run / iterate (once `src/` exists)
 
@@ -44,7 +48,7 @@ unverified assumptions. The trap list is `docs/research/08-pitfalls-gotchas.md` 
 2. Never ship `TaleWorlds.*`, `0Harmony`, or other mods' DLLs in the module output — game refs are
    `Private=False` / `IncludeAssets="compile"` (P-03).
 3. Never commit decompiled sources (P-19); commit distilled notes into `docs/` instead.
-4. Pin game/package versions exactly (`1.3.15.110062`); no floating wildcards across minors (P-05).
+4. Pin game/package versions exactly (`1.4.7.117484`); no floating wildcards across minors (P-05).
 5. Every user-facing string is a `TextObject` with a `{=key}` localization id (P-12).
 6. Exception-contain all campaign event handlers and all reflection into the Diplomacy mod — our
    worst failure mode is "lines missing", never a crash (P-08, doc 05 adapter).

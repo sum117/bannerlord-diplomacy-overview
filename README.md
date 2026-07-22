@@ -5,7 +5,7 @@ kingdom (or clan) as a banner medallion on a circle, with colored lines showing 
 **allied**, or bound by a **non-aggression pact** — toggleable per relation type, with a dropdown to
 switch between kingdom and clan scope. No relation, no line.
 
-Inspired by the diplomacy web in *atWar*; designed to work on vanilla **v1.3.15 + War Sails** and
+Inspired by the diplomacy web in *atWar*; designed to work on vanilla **v1.4.7 + War Sails** and
 alongside the **Realm of Thrones** total conversion and the **Diplomacy** mod (whose pacts it reads
 when installed). Read-only by design: safe to add or remove mid-campaign.
 
@@ -13,9 +13,11 @@ when installed). Read-only by design: safe to add or remove mid-campaign.
 
 ## Status
 
-**Bootstrap / research phase.** No shippable code yet. The full research pass (environment, module
-anatomy, Gauntlet UI techniques, exact v1.3.15 diplomacy APIs, compatibility, architecture,
-pitfalls) lives in [docs/research/](docs/research/README.md) — start there.
+**In development** (game v1.4.7): module scaffold, the pure relations core (96 passing unit tests),
+and the kingdom war web (issue #6) are in flight; a sacrificial tracer proved the injection seams.
+The research pass (environment, module anatomy, Gauntlet UI techniques, diplomacy APIs,
+compatibility, architecture, pitfalls) lives in [docs/research/](docs/research/README.md) — start
+there.
 
 ## Planned v1 scope
 
@@ -24,8 +26,10 @@ pitfalls) lives in [docs/research/](docs/research/README.md) — start there.
 - Banner-medallion nodes, edge tooltips (war stats, pact expiry)
 - Verified against vanilla and Realm of Thrones
 
-Note: "trade pact" lines from the original request have **no data source** in vanilla or the
-Diplomacy mod — see [docs/research/09](docs/research/09-design-reference-mapping.md) for options.
+Note: game **v1.4.7 added native kingdom Trade Agreements**, giving the originally requested "trade
+pact" lines a first-class vanilla data source — see
+[docs/research/11](docs/research/11-game-1.4.7-migration.md) for the API and
+[docs/research/09](docs/research/09-design-reference-mapping.md) for the (reopened) scope decision.
 
 ## Contributing / agents
 

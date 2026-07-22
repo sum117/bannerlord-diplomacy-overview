@@ -37,18 +37,21 @@ safe** — no "save corrupted by missing module" reports. Enforce in review: no
 
 ## Version resilience
 
-- Pin refassemblies to `1.3.15.110062`; SubModule metadata `version="v1.3.15.*"`. On game patches:
-  diff decompiles of the touched types (doc 02 §8) before bumping.
+- Pin refassemblies exactly (currently `1.4.7.117484`; SubModule metadata `version="v1.4.7.*"`). On
+  game patches: diff decompiles of the touched types (doc 02 §8) before bumping — the 1.3.15→1.4.7
+  bump (2026-07-22, doc 11) compiled clean with all injection anchors intact.
 - The community handles multi-version support with per-version DLLs + `Bannerlord.ModuleLoader`
   (Diplomacy ships 10 of them **[LOCAL]**) — documented in doc 03, deliberately deferred.
 - Observed reality: Diplomacy's newest DLL targets 1.3.13 and runs fine on 1.3.15 — minor-version
   drift usually tolerable; **never** assume it across 1.3 → 1.4.
-- Watch item: 1.4.x branch already visible mid-2026 (doc 01).
+- 1.4.x landed: this install runs 1.4.7 since 2026-07 (doc 11); the cross-minor bump is done.
 
 ## Realm of Thrones coexistence (client requirement)
 
 Facts (doc 01): v8.0, same 1.3.x/War Sails branch, 4 modules, standard BUTR stack + metadata,
 UI = sprite/brush **reskin** (not screen-logic replacement), ~20 kingdoms / ~93 clans. **[WEB]**
+(2026-07-22: the game moved to 1.4.7 — before running M5, check whether RoT shipped a 1.4.x
+release; v8.0 targeted 1.3.x.)
 
 Consequences & verification checklist (milestone M5):
 

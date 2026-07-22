@@ -1,7 +1,9 @@
-# 05 — Diplomacy data access (v1.3.15 APIs)
+# 05 — Diplomacy data access (v1.3.15 APIs; 1.4.7 trade addendum)
 
 Every signature below was decompiled from the installed assemblies. **[LOCAL]** throughout;
 exceptions tagged. Namespace root: `TaleWorlds.CampaignSystem` unless stated.
+2026-07-22: every API our code consumes compiles unchanged against **1.4.7.117484** (doc 11); the
+"Trade Pact gap" section is superseded — v1.4.7 has native Trade Agreements (update inline below).
 
 ## Enumerating the graph's nodes
 
@@ -124,6 +126,7 @@ Exact `CampaignEvents` members **[LOCAL]**:
 |---|---|
 | `WarDeclared` | red edges appear |
 | `MakePeace` | red edges disappear |
+| `OnTradeAgreementSignedEvent` *(1.4.7)* | trade edges appear — **no end event exists**; see §Trade update |
 | `AllianceStartedEvent` / `AllianceEndedEvent` | green edges |
 | `CallToWarAgreementStartedEvent` / `CallToWarAgreementEndedEvent` | if we render the 4th type |
 | `ClanChangedKingdom` | clan nodes re-cluster; edges re-derive |
@@ -135,9 +138,29 @@ Pattern: a `CampaignBehaviorBase` with `RegisterEvents()` calling
 when the Relations tab is opened/visible. NAP changes have no vanilla event — Diplomacy's expiry is
 time-based — so also rebuild on tab open and optionally `DailyTickEvent` while visible.
 
-## The "Trade Pact" gap (client conversation point)
+## The "Trade Pact" gap — **SUPERSEDED 2026-07-22: v1.4.7 has native Trade Agreements**
 
-- Vanilla: **no trade agreements** (closest: war *tribute*, which we can already show on war edges).
+Game v1.4.7 added kingdom⇄kingdom **Trade Agreements** to the base game. Full surface, mechanics,
+and provider-design notes: [11-game-1.4.7-migration.md](11-game-1.4.7-migration.md). Essentials
+**[LOCAL v1.4.7]**:
+
+```csharp
+var b = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();  // null-guard (P-08)
+bool has = b.HasTradeAgreement(k1, k2, out TradeAgreementsCampaignBehavior.TradeAgreement a);
+CampaignTime end = b.GetTradeAgreementEndDate(k1, k2);  // only when has == true
+// a: Kingdom1, Kingdom2, EndTime + per-kingdom gold-gained counters (tooltip material).
+// Refresh: CampaignEvents.OnTradeAgreementSignedEvent (IMbEvent<Kingdom, Kingdom>).
+// Endings fire NO event: war declaration auto-breaks (behavior listens to WarDeclared itself),
+// kingdom destruction clears, and EndTime expiry is silent (pruned lazily on next query)
+// => a trade provider must also dirty on DailyTickEvent, or rebuild trade edges on tab open.
+// Note: HasTradeAgreement prunes expired entries as a side effect — that is the game's own
+// bookkeeping on the official read path (vanilla KingdomDiplomacyVM makes the identical call);
+// our read-only rule is about *us* writing state, which we still never do.
+```
+
+The original 1.3.15 analysis is kept below for history:
+
+- Vanilla: ~~no trade agreements~~ (closest: war *tribute*, which we can already show on war edges).
 - Diplomacy mod: none (verified above).
 - Ecosystem: two gameplay mods implement trade-agreement *mechanics* —
   [Art of the Trade](https://www.nexusmods.com/mountandblade2bannerlord/mods/10414) (diplomacy-gated

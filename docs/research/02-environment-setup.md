@@ -55,8 +55,10 @@ Exact package IDs (nupkg inspected) **[LOCAL]** + [BUTR/Bannerlord.ReferenceAsse
 
 - Family: `Bannerlord.ReferenceAssemblies.{Core, Native, SandBox, SandBoxCore*, StoryMode, CustomBattle, BirthAndDeath, Multiplayer, NavalDLC}` (+ `.EarlyAccess` variants for beta branches).
   \*SandBoxCore assemblies ride inside the module packages; the template references Core/Native/SandBox/StoryMode/CustomBattle/BirthAndDeath.
-- **Pin exactly**: `Bannerlord.ReferenceAssemblies.Core` **`1.3.15.110062`** exists and matches this
-  install byte-for-byte in version. Do not use `1.3.*` floats — a 1.4.x line is live on NuGet.
+- **Pin exactly** to the installed build — currently `Bannerlord.ReferenceAssemblies.Core`
+  **`1.4.7.117484`** (was `1.3.15.110062`; bumped 2026-07-22, doc 11). When `Version.xml` gives only
+  `v<major>.<minor>.<rev>`, read the changeset from the decompiled
+  `TaleWorlds.Library.ApplicationVersion.DefaultChangeSet` constant. Never float across minors.
 - `Bannerlord.ReferenceAssemblies.NavalDLC` exists (latest observed `1.3.14.107738`) — **we don't
   reference it**; the Relations view uses no naval APIs.
 - Packages contain `ref/net472` + `ref/netstandard2.0` reference-only assemblies, `PrivateAssets="All"`.

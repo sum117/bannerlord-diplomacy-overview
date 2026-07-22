@@ -12,27 +12,27 @@
   <!-- Hard deps: the game refuses to load us without these (vanilla launcher semantics) -->
   <DependedModules>
     <DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.4.2" />
-    <DependedModule Id="Bannerlord.UIExtenderEx" DependentVersion="v2.13.2" />
-    <DependedModule Id="Native" DependentVersion="v1.3.15" />
-    <DependedModule Id="SandBoxCore" DependentVersion="v1.3.15" />
-    <DependedModule Id="Sandbox" DependentVersion="v1.3.15" />
-    <DependedModule Id="StoryMode" DependentVersion="v1.3.15" />
+    <DependedModule Id="Bannerlord.UIExtenderEx" DependentVersion="v2.13.3" />
+    <DependedModule Id="Native" DependentVersion="v1.4.7" />
+    <DependedModule Id="SandBoxCore" DependentVersion="v1.4.7" />
+    <DependedModule Id="Sandbox" DependentVersion="v1.4.7" />
+    <DependedModule Id="StoryMode" DependentVersion="v1.4.7" />
   </DependedModules>
 
   <!-- BUTR community metadata: richer semantics, enforced by BLSE/LauncherEx -->
   <!-- https://github.com/BUTR/Bannerlord.BLSE#community-dependency-metadata -->
   <DependedModuleMetadatas>
     <DependedModuleMetadata id="Bannerlord.Harmony"      order="LoadBeforeThis" version="v2.4.2" />
-    <DependedModuleMetadata id="Bannerlord.UIExtenderEx" order="LoadBeforeThis" version="v2.13.2" />
+    <DependedModuleMetadata id="Bannerlord.UIExtenderEx" order="LoadBeforeThis" version="v2.13.3" />
     <!-- optional integrations: load before us IF present; absence is fine -->
-    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v5.11.4" optional="true" />
+    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v5.12.2" optional="true" />
     <DependedModuleMetadata id="Bannerlord.Diplomacy"      order="LoadBeforeThis" optional="true" />
-    <DependedModuleMetadata id="Native"      order="LoadBeforeThis" version="v1.3.15.*" />
-    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.3.15.*" />
-    <DependedModuleMetadata id="Sandbox"     order="LoadBeforeThis" version="v1.3.15.*" />
-    <DependedModuleMetadata id="StoryMode"   order="LoadBeforeThis" version="v1.3.15.*" />
-    <DependedModuleMetadata id="CustomBattle" order="LoadBeforeThis" version="v1.3.15.*" optional="true" />
-    <DependedModuleMetadata id="NavalDLC"     order="LoadBeforeThis" version="v1.1.3.*"  optional="true" />
+    <DependedModuleMetadata id="Native"      order="LoadBeforeThis" version="v1.4.7.*" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.4.7.*" />
+    <DependedModuleMetadata id="Sandbox"     order="LoadBeforeThis" version="v1.4.7.*" />
+    <DependedModuleMetadata id="StoryMode"   order="LoadBeforeThis" version="v1.4.7.*" />
+    <DependedModuleMetadata id="CustomBattle" order="LoadBeforeThis" version="v1.4.7.*" optional="true" />
+    <DependedModuleMetadata id="NavalDLC"     order="LoadBeforeThis" version="v1.2.7.*"  optional="true" />
   </DependedModuleMetadatas>
 
   <SubModules>

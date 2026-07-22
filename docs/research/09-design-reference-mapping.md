@@ -27,7 +27,7 @@ house sigils in circular medallions arranged on a circle, colored lines between 
 Raw asks → status:
 
 1. *"every kingdom/clan having a line … allied, trade agreement, or at war"* → War ✅ vanilla;
-   Alliance ✅ vanilla (v1.3 native); Trade ⚠️ no data source (below).
+   Alliance ✅ vanilla (v1.3 native); Trade ✅ vanilla (**v1.4.7 native** — see reopened decision below).
 2. *"toggle on/off whatever the player wants … there could be a ton of lines"* → legend toggles per
    relation kind ✅ + minor-clan filter and lazy rebuild for line volume (RoT ≈ 93 clans) ✅.
 3. *"no affiliation → no line"* → ✅ by construction.
@@ -37,7 +37,16 @@ Raw asks → status:
    scope dropdown ✅; in clan scope, cluster clans by kingdom on the circle (RoT houses group
    naturally) ✅ (doc 07 M3).
 
-## The Trade Pact decision — **DECIDED 2026-07-02: option 1**
+## The Trade Pact decision — **DECIDED 2026-07-02: option 1** · **REOPENED 2026-07-22**
+
+> **UPDATE 2026-07-22:** the premise dissolved — game **v1.4.7 ships native kingdom Trade
+> Agreements** (API: doc 05 §Trade + doc 11), and the player can see them in the vanilla Kingdom →
+> Diplomacy screen. The mock's orange "Trade Pact" line is now implementable on pure vanilla via a
+> `TradeAgreementProvider` (presence-gated on the behavior, P-08 posture). Meanwhile the Diplomacy
+> mod — the NAP data source this decision substituted with — is currently not installed on the dev
+> machine. Recommendation: promote **Trade Agreement to a first-class relation kind** (the client's
+> original ask) and keep NAP as the Diplomacy-mod extra. Needs client sign-off + a roadmap issue;
+> the original decision below stands as history.
 
 Decision (recorded in issue #4): substitute with **Non-Aggression Pact** lines, strictly
 presence-gated — when the Diplomacy mod is installed the NAP legend entry and dashed lines appear;
