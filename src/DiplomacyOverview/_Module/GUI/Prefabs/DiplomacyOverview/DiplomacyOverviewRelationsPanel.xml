@@ -27,11 +27,14 @@
     <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected">
       <Children>
 
-        <!-- Backdrop: calm dark field the colored web reads against; also blocks map click-through -->
-        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#12121CFF" AlphaFactor="0.9" />
+        <!-- Transparent event guard: reveals the vanilla kingdom-screen gaussian blur behind the
+             panel (we paint no opaque fill of our own) while still catching clicks so they do not
+             fall through to whatever sits beneath the screen. -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" />
 
-        <!-- Title, top-left: the 12-o'clock node owns the top-center -->
-        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="15" Brush="Kingdom.NameTitle.Text" Text="@TitleText" />
+        <!-- No panel title: the vanilla kingdom screen already shows the kingdom name centered at
+             the top, and the active tab reads "Relations" — matching the design reference, which
+             gives the top-left corner to the legend. -->
 
         <!-- Design-space canvas -->
         <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Canvas.Width" SuggestedHeight="!Canvas.Height" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -54,8 +57,11 @@
                   <Children>
                     <!-- Sizing wrapper: binds the density-scaled banner dims in the NODE's scope,
                          because the masked widget itself re-scopes onto {Banner} where those
-                         properties do not exist -->
-                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true">
+                         properties do not exist. CircularClipEnabled + IsCircularClipRadiusHalfOfWidth
+                         clip the banner to a circle (radius = half the box width) at render time —
+                         the vanilla Widget mechanism (SetCircualMask), no custom sprite — giving the
+                         reference's circular sigil medallions. -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true" CircularClipEnabled="true" IsCircularClipRadiusHalfOfWidth="true">
                       <Children>
                         <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Flat.Tuple.Banner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
                       </Children>
@@ -68,6 +74,26 @@
 
           </Children>
         </Widget>
+
+        <!-- Legend (issue #7): one clickable toggle row per active relation kind. Row = a
+             line-style color swatch + label; a dimmed row (RowAlpha) means that kind's edges are
+             hidden. Toggling re-filters the cached edges live in RelationsVM — no campaign
+             re-query. Top-left, matching the design reference. -->
+        <ListPanel DataSource="{Legend}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="24" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <ItemTemplate>
+            <ButtonWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="4" AlphaFactor="@RowAlpha" Command.Click="ExecuteToggle">
+              <Children>
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                  <Children>
+                    <!-- Line-style swatch (a short colored bar, matching the reference legend) -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="28" SuggestedHeight="4" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="@SwatchColor" />
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="12" VerticalAlignment="Center" Brush="Clan.Leader.Text" Text="@Label" />
+                  </Children>
+                </ListPanel>
+              </Children>
+            </ButtonWidget>
+          </ItemTemplate>
+        </ListPanel>
 
       </Children>
     </Widget>
