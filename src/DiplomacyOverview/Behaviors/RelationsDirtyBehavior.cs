@@ -42,6 +42,8 @@ namespace DiplomacyOverview.Behaviors
             {
                 CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
                 CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
+                CampaignEvents.OnAllianceStartedEvent.AddNonSerializedListener(this, OnAllianceStarted);
+                CampaignEvents.OnAllianceEndedEvent.AddNonSerializedListener(this, OnAllianceEnded);
                 CampaignEvents.KingdomCreatedEvent.AddNonSerializedListener(this, OnKingdomCreated);
                 CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
                 CampaignEvents.OnClanDestroyedEvent.AddNonSerializedListener(this, OnClanDestroyed);
@@ -65,6 +67,10 @@ namespace DiplomacyOverview.Behaviors
 
         private static void OnMakePeace(IFaction faction1, IFaction faction2, MakePeaceAction.MakePeaceDetail detail)
             => MarkDirty();
+
+        private static void OnAllianceStarted(Kingdom kingdom1, Kingdom kingdom2) => MarkDirty();
+
+        private static void OnAllianceEnded(Kingdom kingdom1, Kingdom kingdom2) => MarkDirty();
 
         private static void OnKingdomCreated(Kingdom kingdom) => MarkDirty();
 

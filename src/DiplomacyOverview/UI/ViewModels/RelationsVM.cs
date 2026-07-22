@@ -33,10 +33,24 @@ namespace DiplomacyOverview.UI.ViewModels
 
         // ---- State -------------------------------------------------------------------------------
 
-        private readonly IRelationProvider[] _providers = { new WarProvider(), new TradeAgreementProvider() };
+        private readonly IRelationProvider[] _providers =
+            { new WarProvider(), new AllianceProvider(), new TradeAgreementProvider() };
+
+        // Which relation kinds are currently shown. Static so a legend toggle survives the
+        // screen-scoped VM being recreated on tab/screen reopen (issue #7: "remembered for the
+        // session") — mirrors RelationsDirtyBehavior's static-flag precedent. Starts all-on.
+        private static RelationKind _visibleKinds =
+            RelationKind.War | RelationKind.Alliance | RelationKind.TradeAgreement
+            | RelationKind.NonAggressionPact | RelationKind.CallToWar;
 
         private MBBindingList<RelationNodeVM> _nodes = new MBBindingList<RelationNodeVM>();
         private MBBindingList<RelationEdgeVM> _edges = new MBBindingList<RelationEdgeVM>();
+        private MBBindingList<RelationLegendItemVM> _legend = new MBBindingList<RelationLegendItemVM>();
+
+        // Every edge from the last rebuild, kept so legend toggles can re-filter into Edges
+        // without re-querying campaign state (issue #7).
+        private List<RelationEdgeVM> _allEdges = new List<RelationEdgeVM>();
+
         private string _titleText;
         private bool _isSelected;
         private bool _built;
@@ -69,6 +83,21 @@ namespace DiplomacyOverview.UI.ViewModels
                 if (!ReferenceEquals(value, _edges))
                 {
                     _edges = value;
+                    OnPropertyChangedWithValue(value);
+                }
+            }
+        }
+
+        /// <summary>One toggle row per active relation kind (issue #7).</summary>
+        [DataSourceProperty]
+        public MBBindingList<RelationLegendItemVM> Legend
+        {
+            get => _legend;
+            set
+            {
+                if (!ReferenceEquals(value, _legend))
+                {
+                    _legend = value;
                     OnPropertyChangedWithValue(value);
                 }
             }
@@ -126,7 +155,9 @@ namespace DiplomacyOverview.UI.ViewModels
                 Diagnostics.Note("web rebuild failed, showing empty web: " + ex);
                 FinalizeNodeList(Nodes);
                 Nodes = new MBBindingList<RelationNodeVM>();
+                _allEdges = new List<RelationEdgeVM>();
                 Edges = new MBBindingList<RelationEdgeVM>();
+                Legend = new MBBindingList<RelationLegendItemVM>();
             }
 
             _built = true;
@@ -200,10 +231,10 @@ namespace DiplomacyOverview.UI.ViewModels
                     density.ShowLabels));
             }
 
-            var edgeVms = new MBBindingList<RelationEdgeVM>();
+            var allEdges = new List<RelationEdgeVM>(layout.Edges.Count);
             foreach (var edge in layout.Edges)
             {
-                edgeVms.Add(new RelationEdgeVM(
+                allEdges.Add(new RelationEdgeVM(
                     edge.Edge,
                     (float)edge.X1,
                     (float)edge.Y1,
@@ -214,18 +245,88 @@ namespace DiplomacyOverview.UI.ViewModels
                     RelationPalette.ColorOf(edge.Edge.Kind),
                     (float)density.EdgeThickness));
             }
+            _allEdges = allEdges;
 
             FinalizeNodeList(Nodes); // release the previous build's banner identifiers
             Nodes = nodeVms;
-            Edges = edgeVms;
+            Legend = BuildLegend();
+            ApplyEdgeFilter(); // sets Edges from _allEdges honoring the current legend toggles
 
-            // One line per rebuild into rgl_log: the difference between "provider found no wars",
+            // One line per rebuild into rgl_log: the difference between "provider found no edges",
             // "graph dropped the edges", and "VM never rebuilt" is invisible on screen.
             Diagnostics.Note(
-                "web rebuilt: " + nodeVms.Count + " kingdoms, " + edgeVms.Count + " lines ("
+                "web rebuilt: " + nodeVms.Count + " kingdoms, " + _allEdges.Count + " relation lines ("
                 + edges.Count + " raw provider edges); node scale "
                 + density.NodeScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
                 + ", labels " + (density.ShowLabels ? "on" : "off") + ".");
+        }
+
+        /// <summary>Builds one legend row per provider kind present (issue #7: the legend only
+        /// lists kinds whose provider exists), each reflecting the current session toggle state.</summary>
+        private MBBindingList<RelationLegendItemVM> BuildLegend()
+        {
+            var legend = new MBBindingList<RelationLegendItemVM>();
+            foreach (var provider in _providers)
+            {
+                var kind = provider.Provides;
+                legend.Add(new RelationLegendItemVM(
+                    kind,
+                    LegendLabel(kind),
+                    RelationPalette.ColorOf(kind),
+                    (_visibleKinds & kind) != 0,
+                    OnLegendToggled));
+            }
+
+            return legend;
+        }
+
+        /// <summary>Repopulates <see cref="Edges"/> from the cached edge list, keeping only kinds
+        /// whose legend toggle is on — no campaign re-query (issue #7).</summary>
+        private void ApplyEdgeFilter()
+        {
+            var visible = new MBBindingList<RelationEdgeVM>();
+            foreach (var edge in _allEdges)
+            {
+                if ((_visibleKinds & edge.Edge.Kind) != 0)
+                {
+                    visible.Add(edge);
+                }
+            }
+
+            Edges = visible;
+        }
+
+        private void OnLegendToggled(RelationLegendItemVM item)
+        {
+            if (item.IsSelected)
+            {
+                _visibleKinds |= item.Kind;
+            }
+            else
+            {
+                _visibleKinds &= ~item.Kind;
+            }
+
+            ApplyEdgeFilter();
+        }
+
+        private static string LegendLabel(RelationKind kind)
+        {
+            switch (kind)
+            {
+                case RelationKind.War:
+                    return new TextObject("{=DipOvKindWar}At War").ToString();
+                case RelationKind.Alliance:
+                    return new TextObject("{=DipOvKindAlliance}Alliance").ToString();
+                case RelationKind.TradeAgreement:
+                    return new TextObject("{=DipOvKindTrade}Trade Agreement").ToString();
+                case RelationKind.NonAggressionPact:
+                    return new TextObject("{=DipOvKindNap}Non-Aggression Pact").ToString();
+                case RelationKind.CallToWar:
+                    return new TextObject("{=DipOvKindCallToWar}Call to War").ToString();
+                default:
+                    return kind.ToString();
+            }
         }
 
         private static ImageIdentifierVM? CreateBannerVisual(Kingdom kingdom)
