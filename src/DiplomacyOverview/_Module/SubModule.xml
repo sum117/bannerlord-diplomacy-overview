@@ -26,7 +26,6 @@
     <DependedModuleMetadata id="Bannerlord.UIExtenderEx" order="LoadBeforeThis" version="v2.13.3" />
     <!-- optional integrations: load before us IF present; absence is fine -->
     <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v5.12.2" optional="true" />
-    <DependedModuleMetadata id="Bannerlord.Diplomacy"      order="LoadBeforeThis" optional="true" />
     <DependedModuleMetadata id="Native"      order="LoadBeforeThis" version="v1.4.7.*" />
     <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="v1.4.7.*" />
     <DependedModuleMetadata id="Sandbox"     order="LoadBeforeThis" version="v1.4.7.*" />

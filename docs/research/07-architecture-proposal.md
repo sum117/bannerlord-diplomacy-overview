@@ -21,7 +21,7 @@ bannerlord-diplomacy-overview/
 │   │   ├── GUI/Prefabs/DiplomacyOverview/{RelationsPanel.xml, RelationNode.xml, RelationLegend.xml}
 │   │   └── ModuleData/Languages/…
 │   ├── Data/                         # PURE layer — no TaleWorlds types beyond IDs where possible
-│   │   ├── RelationKind.cs           # War, Alliance, NonAggressionPact, CallToWar (flags)
+│   │   ├── RelationKind.cs           # War, Alliance, TradeAgreement, CallToWar (+ legacy NAP) flags
 │   │   ├── RelationEdge.cs           # (NodeId a, NodeId b, RelationKind, payload for tooltips)
 │   │   ├── RelationGraph.cs          # nodes + edges + filter application
 │   │   └── CircleLayout.cs           # pure math: N nodes → positions, label anchors, edge endpoints
@@ -29,7 +29,7 @@ bannerlord-diplomacy-overview/
 │   │   ├── IRelationProvider.cs      # IEnumerable<RelationEdge> GetEdges(scope); RelationKind Provides
 │   │   ├── WarProvider.cs            # IFaction.FactionsAtWarWith + GetStanceWith payload
 │   │   ├── AllianceProvider.cs       # Kingdom.IsAllyWith / AlliedKingdoms / end dates
-│   │   └── DiplomacyNapProvider.cs   # reflection adapter (doc 05); self-disables when absent
+│   │   └── TradeAgreementProvider.cs # native 1.4.7 behavior (doc 11); self-disables when absent
 │   ├── Behaviors/
 │   │   └── RelationsDirtyBehavior.cs # CampaignBehaviorBase: event listeners → dirty flag; empty SyncData
 │   └── UI/
@@ -57,7 +57,7 @@ RelationsVM publishes MBBindingList<NodeVM>, MBBindingList<EdgeVM>, legend toggl
 - Rebuild is on-demand only (never per-tick, never per-frame). A full rebuild at RoT scale
   (~93 clans) is thousands of cheap property reads — microseconds-to-milliseconds; still, wars come
   from `FactionsAtWarWith` (per-node) not O(n²) pair scans; alliances from `AlliedKingdoms`; only
-  NAPs need pair iteration (kingdom count² ≈ 400 max — fine).
+  trade agreements need pair iteration (no public enumerator — doc 11; kingdom count² ≈ 400 max — fine).
 - Toggle/dropdown changes only re-filter/re-layout from the cached graph — no re-query.
 
 ## VM / widget split
@@ -70,8 +70,8 @@ RelationsVM publishes MBBindingList<NodeVM>, MBBindingList<EdgeVM>, legend toggl
   `DrawSprite` rects, doc 04 §C technique 1). Nodes are ordinary child widgets positioned by binding
   — they hot-reload; only lines are code-drawn.
 - Legend: `MBBindingList<RelationLegendItemVM>` (kind, color swatch, `IsEnabled` toggle) —
-  visibility of a kind = provider present AND toggle on; "Trade Pact" appears only when a provider
-  exists (doc 05 gap).
+  visibility of a kind = provider present AND toggle on; "Trade Agreement" appears only when the
+  native behavior exists (presence-gated, doc 11).
 
 ## Settings
 
@@ -87,8 +87,8 @@ RelationsVM publishes MBBindingList<NodeVM>, MBBindingList<EdgeVM>, legend toggl
 - **M1 — nodes**: kingdoms on a circle with banner medallions + labels.
 - **M2 — edges**: war/alliance lines + legend toggles (the mockup, minus dropdown).
 - **M3 — scope**: kingdom⇄clan dropdown; clan clustering by kingdom; minor-clan filter.
-- **M4 — integrations**: Diplomacy NAP provider (dashed lines), tooltips (war stats, expiry),
-  optional call-to-war kind.
+- **M4 — integrations**: TradeAgreementProvider (orange lines, native 1.4.7 — #15), tooltips (war
+  stats, expiry), optional call-to-war kind. (Diplomacy NAP adapter retired — #9.)
 - **M5 — compat pass**: RoT installed (+ BannerKings): tab visible, banners render, strip fits,
   perf sane. MCM defaults. Release packaging + CI publish wiring.
 
@@ -104,5 +104,5 @@ RelationsVM publishes MBBindingList<NodeVM>, MBBindingList<EdgeVM>, legend toggl
 
 ## Explicit non-goals (v1)
 
-Trade-pact data invention; writing any diplomacy state; map-overlay rendering; multiplayer; Game
+Writing any diplomacy state; map-overlay rendering; multiplayer; Game
 Pass (`net6`/`Gaming.Desktop`) build; per-version DLL loader; custom sprite assets.

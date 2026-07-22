@@ -1,7 +1,7 @@
 # AGENTS.md — Diplomacy Overview (Mount & Blade II: Bannerlord mod)
 
 C# mod adding a "Relations" tab to the Kingdom screen: kingdoms/clans as banner-medallion nodes on a
-circle, colored lines for their relations (War / Alliance / Non-Aggression Pact), clickable legend
+circle, colored lines for their relations (War / Alliance / Trade Agreement), clickable legend
 toggles per relation type, and a kingdom⇄clan scope dropdown. **Read-only mod**: it reads campaign
 state, never mutates it, and writes nothing into save files.
 
@@ -50,8 +50,9 @@ record in `docs/research/11-game-1.4.7-migration.md`. Follow the architecture in
 3. Never commit decompiled sources (P-19); commit distilled notes into `docs/` instead.
 4. Pin game/package versions exactly (`1.4.7.117484`); no floating wildcards across minors (P-05).
 5. Every user-facing string is a `TextObject` with a `{=key}` localization id (P-12).
-6. Exception-contain all campaign event handlers and all reflection into the Diplomacy mod — our
-   worst failure mode is "lines missing", never a crash (P-08, doc 05 adapter).
+6. Exception-contain all campaign event handlers and every optional-integration lookup (e.g. the
+   trade-agreement behavior may be absent in old saves/TC mods) — our worst failure mode is "lines
+   missing", never a crash (P-08).
 7. Guard `Campaign.Current != null` on every campaign query (P-07).
 
 ## Conventions
@@ -61,4 +62,5 @@ record in `docs/research/11-game-1.4.7-migration.md`. Follow the architecture in
 - Commits: imperative subject ≤72 chars, body explains *why*; reference `P-xx`/`S-x`/milestone ids
   (`M0`–`M5`) where they apply.
 - Compatibility posture: additive-only UI injection (UIExtenderEx), zero Harmony patches of our own,
-  optional (soft) dependencies for MCM and the Diplomacy mod — see `docs/research/06`.
+  optional (soft) dependency for MCM — see `docs/research/06`. (The Diplomacy-mod NAP adapter was
+  retired 2026-07-22: trade agreements are native — #9/#15.)

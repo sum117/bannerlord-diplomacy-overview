@@ -44,9 +44,10 @@ Raw asks → status:
 > Diplomacy screen. The mock's orange "Trade Pact" line is now implementable on pure vanilla via a
 > `TradeAgreementProvider` (presence-gated on the behavior, P-08 posture). Meanwhile the Diplomacy
 > mod — the NAP data source this decision substituted with — is currently not installed on the dev
-> machine. Recommendation: promote **Trade Agreement to a first-class relation kind** (the client's
-> original ask) and keep NAP as the Diplomacy-mod extra. Needs client sign-off + a roadmap issue;
-> the original decision below stands as history.
+> machine. **RESOLVED — client signed off 2026-07-22:** Trade Agreement is promoted to the
+> first-class third kind (issue #15) and the Diplomacy-mod NAP adapter is retired (#9 closed; NAP
+> lines may return as a v2 optional extra if users ask). The original decision below stands as
+> history.
 
 Decision (recorded in issue #4): substitute with **Non-Aggression Pact** lines, strictly
 presence-gated — when the Diplomacy mod is installed the NAP legend entry and dashed lines appear;

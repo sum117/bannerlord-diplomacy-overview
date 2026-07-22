@@ -2,12 +2,12 @@
 
 A Mount & Blade II: Bannerlord mod that adds a **Relations** view to the Kingdom screen: every
 kingdom (or clan) as a banner medallion on a circle, with colored lines showing who is **at war**,
-**allied**, or bound by a **non-aggression pact** — toggleable per relation type, with a dropdown to
+**allied**, or bound by a **trade agreement** — toggleable per relation type, with a dropdown to
 switch between kingdom and clan scope. No relation, no line.
 
 Inspired by the diplomacy web in *atWar*; designed to work on vanilla **v1.4.7 + War Sails** and
-alongside the **Realm of Thrones** total conversion and the **Diplomacy** mod (whose pacts it reads
-when installed). Read-only by design: safe to add or remove mid-campaign.
+alongside the **Realm of Thrones** total conversion. Read-only by design: safe to add or remove
+mid-campaign.
 
 ![Design reference](docs/images/diplomacy-overview-design-reference.png)
 
@@ -22,7 +22,7 @@ there.
 ## Planned v1 scope
 
 - Kingdom + clan scopes (clans clustered by kingdom)
-- War (red) / Alliance (green) / NAP (via Diplomacy mod) edges with legend toggles
+- War (red) / Alliance (green) / Trade Agreement (orange) edges with legend toggles
 - Banner-medallion nodes, edge tooltips (war stats, pact expiry)
 - Verified against vanilla and Realm of Thrones
 
