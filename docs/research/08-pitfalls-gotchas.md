@@ -149,6 +149,12 @@ P-21). **We do not fix it.** A fix means reflowing/constraining a *shared* widge
 occupy — global, untestable across real modlists, and liable to fight other tab-adders; that breaks
 the additive-only posture (doc 06) far more than adding one node does. Adding a tab is composable;
 reshaping the container is surgery. Only in-remit mitigation is a short tab label (P-21).
+**RESOLVED 2026-07-22 — relocated to the Clan management screen** (tab inserted after Fiefs,
+before the Income end-cap). That screen has room for a 5th tab without touching the portrait, and it
+is reachable for landless / kingdomless / mercenary clans too, so the web now reaches more players.
+The "don't reflow a shared strip" reasoning above still holds for the kingdom screen — we picked a
+roomier host rather than fighting the layout. See `ClanScreenMixin` / `ClanScreenPrefabExtensions`
+(anchors: Income button `@Brush='Header.Tab.Right'`, panel `descendant::ClanIncome`).
 
 **P-26 — Gauntlet `Widget.Rotation` is DEGREES, and prefab `@`-bindability is per-property; verify
 both against a decompile.** The #10 hover hit-strip rotated nearly-flat until we traced it: our own
@@ -158,7 +164,11 @@ correctly, and `Widget.Rotation` feeds the same field — so it is degrees too (
 "unrotated"). Separately, not every property is prefab-data-bindable: confirm before relying on `@`.
 `Rotation`, `AlphaFactor`, and `Brush.FontColor` all bind (the latter two verified in vanilla
 prefabs), but the general rule is decompile-or-grep first — a `@`-binding to an unregistered
-property silently no-ops with no error.
+property silently no-ops with no error. Corollary (same "verify the behaviour" theme): a
+**`ButtonWidget` renders its `Sprite` ignoring `AlphaFactor` and `Color`** — an invisible hit target
+must carry NO sprite at all, not a transparent one (a magenta / `AlphaFactor="0.0"` diagnostic strip
+rendered solid white until the sprite was removed; a spriteless button is still hit-tested by its
+geometry, exactly like the node medallion buttons).
 
 **P-27 — Passive hover hooks don't fire on a UIExtenderEx-injected movie; use explicit hover
 commands.** On our injected Relations panel, `BasicTooltip="@Hint"` never showed a tooltip and

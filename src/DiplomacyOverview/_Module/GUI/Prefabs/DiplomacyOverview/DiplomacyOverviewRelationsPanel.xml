@@ -53,9 +53,11 @@
                          (Rotation in DEGREES, centre pivot). Its rotated AreaRect is what Gauntlet
                          hit-tests, so hover only fires near the line; Command.HoverBegin then shows
                          the vanilla tooltip explicitly (the injected movie doesn't poll passive
-                         BasicTooltip — the ImprovedGarrisons pattern). Invisible (AlphaFactor 0),
-                         still hit-tested (geometry-based). -->
-                    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@HitWidth" SuggestedHeight="@HitHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@HitX" PositionYOffset="@HitY" Rotation="@HitRotation" PivotX="0.5" PivotY="0.5" Sprite="BlankWhiteSquare_9" AlphaFactor="0.0" Command.HoverBegin="ExecuteShowTooltip" Command.HoverEnd="ExecuteHideTooltip" />
+                         BasicTooltip — the ImprovedGarrisons pattern). NO sprite: a ButtonWidget
+                         renders its sprite ignoring AlphaFactor/Color, so the strip is invisible
+                         only by carrying no sprite at all; it stays hit-testable by geometry
+                         (like the node buttons, which also have no sprite of their own). -->
+                    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@HitWidth" SuggestedHeight="@HitHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@HitX" PositionYOffset="@HitY" Rotation="@HitRotation" PivotX="0.5" PivotY="0.5" Command.HoverBegin="ExecuteShowTooltip" Command.HoverEnd="ExecuteHideTooltip" />
                   </Children>
                 </Widget>
               </ItemTemplate>
