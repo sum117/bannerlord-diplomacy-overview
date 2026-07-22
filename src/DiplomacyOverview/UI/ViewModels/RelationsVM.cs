@@ -33,7 +33,7 @@ namespace DiplomacyOverview.UI.ViewModels
 
         // ---- State -------------------------------------------------------------------------------
 
-        private readonly IRelationProvider[] _providers = { new WarProvider() };
+        private readonly IRelationProvider[] _providers = { new WarProvider(), new TradeAgreementProvider() };
 
         private MBBindingList<RelationNodeVM> _nodes = new MBBindingList<RelationNodeVM>();
         private MBBindingList<RelationEdgeVM> _edges = new MBBindingList<RelationEdgeVM>();
@@ -221,7 +221,7 @@ namespace DiplomacyOverview.UI.ViewModels
             // One line per rebuild into rgl_log: the difference between "provider found no wars",
             // "graph dropped the edges", and "VM never rebuilt" is invisible on screen.
             Diagnostics.Note(
-                "web rebuilt: " + nodeVms.Count + " kingdoms, " + edgeVms.Count + " war lines ("
+                "web rebuilt: " + nodeVms.Count + " kingdoms, " + edgeVms.Count + " lines ("
                 + edges.Count + " raw provider edges); node scale "
                 + density.NodeScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)
                 + ", labels " + (density.ShowLabels ? "on" : "off") + ".");

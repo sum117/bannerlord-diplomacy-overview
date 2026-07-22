@@ -45,6 +45,8 @@ namespace DiplomacyOverview.Behaviors
                 CampaignEvents.KingdomCreatedEvent.AddNonSerializedListener(this, OnKingdomCreated);
                 CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
                 CampaignEvents.OnClanDestroyedEvent.AddNonSerializedListener(this, OnClanDestroyed);
+                CampaignEvents.OnTradeAgreementSignedEvent.AddNonSerializedListener(this, OnTradeAgreementSigned);
+                CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             }
             catch
             {
@@ -69,5 +71,12 @@ namespace DiplomacyOverview.Behaviors
         private static void OnKingdomDestroyed(Kingdom kingdom) => MarkDirty();
 
         private static void OnClanDestroyed(Clan clan) => MarkDirty();
+
+        private static void OnTradeAgreementSigned(Kingdom kingdom1, Kingdom kingdom2) => MarkDirty();
+
+        // Trade agreements END without any event — war auto-break arrives via OnWarDeclared, but
+        // EndTime expiry is silent (docs/research/11) — so one flag write per game day bounds a
+        // stale trade line's lifetime at one day past its agreement.
+        private static void OnDailyTick() => MarkDirty();
     }
 }

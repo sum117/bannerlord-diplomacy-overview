@@ -66,7 +66,8 @@ namespace DiplomacyOverview.Tests
         [Fact]
         public void Create_AllFlagsCombined_Throws()
         {
-            var everything = RelationKind.War | RelationKind.Alliance | RelationKind.NonAggressionPact | RelationKind.CallToWar;
+            var everything = RelationKind.War | RelationKind.Alliance | RelationKind.NonAggressionPact
+                | RelationKind.CallToWar | RelationKind.TradeAgreement;
 
             Assert.Throws<ArgumentException>(() => RelationEdge.Create("A", "B", everything));
         }
@@ -76,6 +77,7 @@ namespace DiplomacyOverview.Tests
         [InlineData(RelationKind.Alliance)]
         [InlineData(RelationKind.NonAggressionPact)]
         [InlineData(RelationKind.CallToWar)]
+        [InlineData(RelationKind.TradeAgreement)]
         public void Create_EachSingleFlag_Succeeds(RelationKind kind)
         {
             var edge = RelationEdge.Create("A", "B", kind);

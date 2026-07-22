@@ -15,5 +15,6 @@ namespace DiplomacyOverview.Core
         Alliance = 2,
         NonAggressionPact = 4,
         CallToWar = 8,
+        TradeAgreement = 16,
     }
 }

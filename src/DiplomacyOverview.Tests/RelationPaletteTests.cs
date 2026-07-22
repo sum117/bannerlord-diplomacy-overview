@@ -9,7 +9,8 @@ namespace DiplomacyOverview.Tests
         [Theory]
         [InlineData(RelationKind.War, "#C0392BFF")]
         [InlineData(RelationKind.Alliance, "#4E9B47FF")]
-        [InlineData(RelationKind.NonAggressionPact, "#D4A017FF")]
+        [InlineData(RelationKind.TradeAgreement, "#D4A017FF")] // the mockup orange, reclaimed from NAP (doc 09)
+        [InlineData(RelationKind.NonAggressionPact, "#8E44ADFF")]
         [InlineData(RelationKind.CallToWar, "#2E86ABFF")]
         public void ColorOf_SingleKinds_MapToDocPalette(RelationKind kind, string expected)
         {
@@ -29,6 +30,7 @@ namespace DiplomacyOverview.Tests
         [InlineData(RelationKind.War)]
         [InlineData(RelationKind.Alliance)]
         [InlineData(RelationKind.NonAggressionPact)]
+        [InlineData(RelationKind.TradeAgreement)]
         [InlineData(RelationKind.CallToWar)]
         public void ColorOf_AlwaysReturnsGauntletParseableRgbaHex(RelationKind kind)
         {

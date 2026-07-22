@@ -133,6 +133,24 @@ namespace DiplomacyOverview.Tests
         }
 
         [Fact]
+        public void Filter_TradeAgreementMask_ReturnsOnlyTradeEdges()
+        {
+            var nodes = new[] { "A", "B", "C" };
+            var edges = new[]
+            {
+                RelationEdge.Create("A", "B", RelationKind.War),
+                RelationEdge.Create("A", "B", RelationKind.TradeAgreement), // same pair, distinct kind survives dedup
+                RelationEdge.Create("C", "B", RelationKind.TradeAgreement), // swapped-arg canonicalization
+            };
+            var graph = new RelationGraph(nodes, edges);
+
+            var filtered = graph.Filter(RelationKind.TradeAgreement);
+
+            Assert.Equal(2, filtered.Count);
+            Assert.All(filtered, e => Assert.Equal(RelationKind.TradeAgreement, e.Kind));
+        }
+
+        [Fact]
         public void Filter_NoneMask_ReturnsEmpty()
         {
             var nodes = new[] { "A", "B" };
