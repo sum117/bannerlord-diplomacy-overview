@@ -137,3 +137,15 @@ alone is wrong on exactly the mod lists we target. Filter for *participation*: a
 non-eliminated clan with a living leader (`KingdomFilter.IsParticipant`), and derive edge
 endpoints through the same predicate so stale zombie stances drop with their nodes. Corollary:
 never size UI to vanilla counts (8-ish kingdoms) — assume mods multiply campaign objects.
+
+**P-25 — Our added tab overflows the vanilla tab strip onto the top-right portrait; deliberately
+left unfixed (decision 2026-07-22, user call).** `KingdomTabControlListPanel` is
+`WidthSizePolicy="CoverChildren"` + `HorizontalAlignment="Center"` with no max width, so every added
+tab widens the strip symmetrically from center; at 6 tabs the right edge slides under the fixed
+leader portrait ("Diplomacy" overlaps the portrait label — observed in-game on a list with *no other
+tab-adding mods*, so our Relations tab is the 6th that tips it). This is a vanilla layout limit any
+6th+ tab triggers: the Diplomacy mod's "Factions" tab and BannerKings' tabs do it without us (cf.
+P-21). **We do not fix it.** A fix means reflowing/constraining a *shared* widget every mod's tabs
+occupy — global, untestable across real modlists, and liable to fight other tab-adders; that breaks
+the additive-only posture (doc 06) far more than adding one node does. Adding a tab is composable;
+reshaping the container is surgery. Only in-remit mitigation is a short tab label (P-21).

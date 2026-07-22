@@ -25,6 +25,12 @@ namespace DiplomacyOverview.UI.Mixins
     /// Header.Tab.Right end-cap as the rightmost button; ours renders mid-strip.
     /// !Header.Tab.Center.* constants are declared at the top of the same prefab document,
     /// so the spliced node can reference them.
+    ///
+    /// Known, accepted cosmetic limitation: a 6th tab widens the centered vanilla strip until its
+    /// right edge slides under the top-right leader portrait. We deliberately do NOT reflow the
+    /// shared strip to fix it — that is a global mutation of a widget every mod's tabs occupy,
+    /// which breaks our additive-only posture worse than adding one node does (P-25; short label
+    /// per P-21 is the only in-remit mitigation).
     /// </summary>
     [PrefabExtension("KingdomManagement", "descendant::ButtonWidget[@Id='DiplomacyTabButton']")]
     internal sealed class KingdomManagementTabButtonExtension : PrefabExtensionInsertPatch
