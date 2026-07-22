@@ -40,10 +40,22 @@
         <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Canvas.Width" SuggestedHeight="!Canvas.Height" HorizontalAlignment="Center" VerticalAlignment="Center">
           <Children>
 
-            <!-- Edges (under the nodes): one self-drawing widget per war line -->
+            <!-- Edges (under the nodes): each item = the self-drawing line + an invisible rotated
+                 hover strip carrying the vanilla tooltip. The two container widgets are
+                 DoNotAcceptEvents (CanAcceptEvents=false) so only the strip is an event target;
+                 children are still hit-tested, so hover falls through the containers to the strip. -->
             <Widget DataSource="{Edges}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" ApexX="@ApexX" ApexY="@ApexY" LineColor="@LineColor" LineThickness="@LineThickness" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+                  <Children>
+                    <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" ApexX="@ApexX" ApexY="@ApexY" LineColor="@LineColor" LineThickness="@LineThickness" />
+                    <!-- Hover strip: a thin rect placed along the segment and rotated to lie on it
+                         (Rotation in radians, centre pivot). Its rotated AreaRect is what Gauntlet
+                         hit-tests, so hover only fires near the line; BasicTooltip then shows the
+                         rich TooltipProperty list. Invisible (no brush). -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@HitWidth" SuggestedHeight="@HitHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@HitX" PositionYOffset="@HitY" Rotation="@HitRotation" PivotX="0.5" PivotY="0.5" BasicTooltip="@Hint" />
+                  </Children>
+                </Widget>
               </ItemTemplate>
             </Widget>
 
@@ -53,7 +65,7 @@
                  encyclopedia page (#10) -->
             <Widget DataSource="{Nodes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotPassEventsToChildren="true" Command.Click="ExecuteOpenEncyclopedia">
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" Command.Click="ExecuteOpenEncyclopedia">
                   <Children>
                     <!-- Sizing wrapper: binds the density-scaled banner dims in the NODE's scope,
                          because the masked widget itself re-scopes onto {Banner} where those
@@ -67,6 +79,10 @@
                       </Children>
                     </Widget>
                     <TextWidget IsVisible="@ShowLabel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                    <!-- Hover glow over the medallion: transparent by default, fades in on hover
+                         (vanilla HoverIndicatorBrush, 0.1s). Follows the button's Hovered state via
+                         UpdateChildrenStates on the root; clipped to the same circle as the banner. -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true" CircularClipEnabled="true" IsCircularClipRadiusHalfOfWidth="true" Brush="HoverIndicatorBrush" />
                   </Children>
                 </ButtonWidget>
               </ItemTemplate>
@@ -81,8 +97,10 @@
              re-query. Top-left, matching the design reference. -->
         <ListPanel DataSource="{Legend}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="24" StackLayout.LayoutMethod="VerticalTopToBottom">
           <ItemTemplate>
-            <ButtonWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="4" AlphaFactor="@RowAlpha" Command.Click="ExecuteToggle">
+            <ButtonWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="4" AlphaFactor="@RowAlpha" UpdateChildrenStates="true" Command.Click="ExecuteToggle">
               <Children>
+                <!-- Hover highlight behind the row: transparent by default, fades in on hover -->
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" Brush="HoverIndicatorBrush" />
                 <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
                   <Children>
                     <!-- Line-style swatch (a short colored bar, matching the reference legend) -->

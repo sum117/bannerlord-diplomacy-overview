@@ -28,6 +28,10 @@ namespace DiplomacyOverview.Providers
         /// <summary>Details key: daily tribute amount paid by "tribute.payer" (positive integer).</summary>
         public const string TributeDailyAmountKey = "tribute.dailyAmount";
 
+        /// <summary>Details key prefix: a faction's war casualties; append the faction StringId
+        /// (e.g. "war.casualties.vlandia"). Survives endpoint canonicalization (id-keyed, not A/B).</summary>
+        public const string CasualtiesKeyPrefix = "war.casualties.";
+
         public RelationKind Provides => RelationKind.War;
 
         public IReadOnlyList<RelationEdge> GetEdges()
@@ -129,6 +133,11 @@ namespace DiplomacyOverview.Providers
                     details[TributePayerKey] = other.StringId;
                     details[TributeDailyAmountKey] = (-dailyTribute).ToString(CultureInfo.InvariantCulture);
                 }
+
+                details[CasualtiesKeyPrefix + kingdom.StringId] =
+                    stance.GetCasualties(kingdom).ToString(CultureInfo.InvariantCulture);
+                details[CasualtiesKeyPrefix + other.StringId] =
+                    stance.GetCasualties(other).ToString(CultureInfo.InvariantCulture);
 
                 return details;
             }

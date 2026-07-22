@@ -236,6 +236,8 @@ namespace DiplomacyOverview.UI.ViewModels
             {
                 allEdges.Add(new RelationEdgeVM(
                     edge.Edge,
+                    ResolveName(kingdomById, edge.Edge.NodeA),
+                    ResolveName(kingdomById, edge.Edge.NodeB),
                     (float)edge.X1,
                     (float)edge.Y1,
                     (float)edge.X2,
@@ -271,7 +273,7 @@ namespace DiplomacyOverview.UI.ViewModels
                 var kind = provider.Provides;
                 legend.Add(new RelationLegendItemVM(
                     kind,
-                    LegendLabel(kind),
+                    RelationKindText.Label(kind),
                     RelationPalette.ColorOf(kind),
                     (_visibleKinds & kind) != 0,
                     OnLegendToggled));
@@ -310,23 +312,11 @@ namespace DiplomacyOverview.UI.ViewModels
             ApplyEdgeFilter();
         }
 
-        private static string LegendLabel(RelationKind kind)
+        private static string ResolveName(Dictionary<string, Kingdom> kingdomById, string nodeId)
         {
-            switch (kind)
-            {
-                case RelationKind.War:
-                    return new TextObject("{=DipOvKindWar}At War").ToString();
-                case RelationKind.Alliance:
-                    return new TextObject("{=DipOvKindAlliance}Alliance").ToString();
-                case RelationKind.TradeAgreement:
-                    return new TextObject("{=DipOvKindTrade}Trade Agreement").ToString();
-                case RelationKind.NonAggressionPact:
-                    return new TextObject("{=DipOvKindNap}Non-Aggression Pact").ToString();
-                case RelationKind.CallToWar:
-                    return new TextObject("{=DipOvKindCallToWar}Call to War").ToString();
-                default:
-                    return kind.ToString();
-            }
+            return kingdomById.TryGetValue(nodeId, out var kingdom)
+                ? (kingdom.Name?.ToString() ?? nodeId)
+                : nodeId;
         }
 
         private static ImageIdentifierVM? CreateBannerVisual(Kingdom kingdom)
