@@ -15,6 +15,8 @@ namespace DiplomacyOverview.UI.ViewModels
     {
         private const float OnAlpha = 1.0f;
         private const float OffAlpha = 0.4f;
+        private const string OnLabelColor = "#FFFFFFFF";  // bright white = kind shown
+        private const string OffLabelColor = "#8A8A8AFF"; // grey = kind hidden
 
         private readonly Action<RelationLegendItemVM> _onToggle;
         private readonly string _label;
@@ -56,6 +58,7 @@ namespace DiplomacyOverview.UI.ViewModels
                     _isSelected = value;
                     OnPropertyChangedWithValue(value);
                     OnPropertyChanged(nameof(RowAlpha));
+                    OnPropertyChanged(nameof(LabelColor));
                 }
             }
         }
@@ -63,6 +66,11 @@ namespace DiplomacyOverview.UI.ViewModels
         /// <summary>Row opacity: full when the kind is shown, dimmed when toggled off.</summary>
         [DataSourceProperty]
         public float RowAlpha => _isSelected ? OnAlpha : OffAlpha;
+
+        /// <summary>Label color: bright white when the kind is shown, grey when hidden — the clear
+        /// on/off toggle signal (Brush.FontColor binding, verified in vanilla prefabs).</summary>
+        [DataSourceProperty]
+        public string LabelColor => _isSelected ? OnLabelColor : OffLabelColor;
 
         /// <summary>Bound to the row button's Command.Click.</summary>
         public void ExecuteToggle()

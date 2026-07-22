@@ -50,10 +50,12 @@
                   <Children>
                     <DiplomacyOverviewEdgeWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" X1="@X1" Y1="@Y1" X2="@X2" Y2="@Y2" ApexX="@ApexX" ApexY="@ApexY" LineColor="@LineColor" LineThickness="@LineThickness" />
                     <!-- Hover strip: a thin rect placed along the segment and rotated to lie on it
-                         (Rotation in radians, centre pivot). Its rotated AreaRect is what Gauntlet
-                         hit-tests, so hover only fires near the line; BasicTooltip then shows the
-                         rich TooltipProperty list. Invisible (no brush). -->
-                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@HitWidth" SuggestedHeight="@HitHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@HitX" PositionYOffset="@HitY" Rotation="@HitRotation" PivotX="0.5" PivotY="0.5" BasicTooltip="@Hint" />
+                         (Rotation in DEGREES, centre pivot). Its rotated AreaRect is what Gauntlet
+                         hit-tests, so hover only fires near the line; Command.HoverBegin then shows
+                         the vanilla tooltip explicitly (the injected movie doesn't poll passive
+                         BasicTooltip — the ImprovedGarrisons pattern). Invisible (AlphaFactor 0),
+                         still hit-tested (geometry-based). -->
+                    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@HitWidth" SuggestedHeight="@HitHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@HitX" PositionYOffset="@HitY" Rotation="@HitRotation" PivotX="0.5" PivotY="0.5" Sprite="BlankWhiteSquare_9" AlphaFactor="0.0" Command.HoverBegin="ExecuteShowTooltip" Command.HoverEnd="ExecuteHideTooltip" />
                   </Children>
                 </Widget>
               </ItemTemplate>
@@ -65,7 +67,7 @@
                  encyclopedia page (#10) -->
             <Widget DataSource="{Nodes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
               <ItemTemplate>
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" Command.Click="ExecuteOpenEncyclopedia">
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BoxWidth" SuggestedHeight="@BoxHeight" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="@X" PositionYOffset="@Y" DoNotPassEventsToChildren="true" Command.Click="ExecuteOpenEncyclopedia" Command.HoverBegin="ExecuteHoverBegin" Command.HoverEnd="ExecuteHoverEnd">
                   <Children>
                     <!-- Sizing wrapper: binds the density-scaled banner dims in the NODE's scope,
                          because the masked widget itself re-scopes onto {Banner} where those
@@ -79,10 +81,11 @@
                       </Children>
                     </Widget>
                     <TextWidget IsVisible="@ShowLabel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="!NodeLabel.MarginTop" Brush="Clan.Leader.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
-                    <!-- Hover glow over the medallion: transparent by default, fades in on hover
-                         (vanilla HoverIndicatorBrush, 0.1s). Follows the button's Hovered state via
-                         UpdateChildrenStates on the root; clipped to the same circle as the banner. -->
-                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true" CircularClipEnabled="true" IsCircularClipRadiusHalfOfWidth="true" Brush="HoverIndicatorBrush" />
+                    <!-- Hover glow over the medallion: a subtle white tint shown only while hovered,
+                         driven explicitly by the node's IsHovered (Command.HoverBegin/End) — not
+                         brush-state propagation, which did not fire on the injected movie (#10).
+                         Clipped to the same circle as the banner. -->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="@BannerWidth" SuggestedHeight="@BannerHeight" HorizontalAlignment="Center" VerticalAlignment="Top" DoNotAcceptEvents="true" CircularClipEnabled="true" IsCircularClipRadiusHalfOfWidth="true" Sprite="BlankWhiteSquare_9" Color="#FFFFFF40" IsVisible="@IsHovered" />
                   </Children>
                 </ButtonWidget>
               </ItemTemplate>
@@ -101,13 +104,13 @@
                  CoverChildren button balloons the button to fill the panel, which swallows clicks
                  across the whole screen and overlaps the rows (observed in-game). The row's
                  toggle-state dim (RowAlpha) is its feedback; node hover glow lives on the nodes. -->
-            <ButtonWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="4" AlphaFactor="@RowAlpha" Command.Click="ExecuteToggle">
+            <ButtonWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="4" AlphaFactor="@RowAlpha" DoNotPassEventsToChildren="true" Command.Click="ExecuteToggle">
               <Children>
                 <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
                   <Children>
                     <!-- Line-style swatch (a short colored bar, matching the reference legend) -->
                     <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="28" SuggestedHeight="4" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="@SwatchColor" />
-                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="12" VerticalAlignment="Center" Brush="Clan.Leader.Text" Text="@Label" />
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="12" VerticalAlignment="Center" Brush="Clan.Leader.Text" Brush.FontColor="@LabelColor" Text="@Label" />
                   </Children>
                 </ListPanel>
               </Children>

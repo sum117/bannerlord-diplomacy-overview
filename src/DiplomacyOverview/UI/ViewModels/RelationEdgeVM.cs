@@ -74,9 +74,9 @@ namespace DiplomacyOverview.UI.ViewModels
             _hitWidth = (float)strip.Length;
             _hitX = (float)strip.TopLeftX(HitThickness);
             _hitY = (float)strip.TopLeftY(HitThickness);
-            _hitRotation = (float)strip.AngleRadians;
-
-            Hint = new BasicTooltipViewModel(BuildTooltip);
+            // Widget.Rotation is DEGREES (feeds Rectangle2D.LocalRotation; DiplomacyOverviewEdgeWidget
+            // draws with atan2-in-degrees and renders correctly). Convert the math radians.
+            _hitRotation = (float)(strip.AngleRadians * 180.0 / Math.PI);
         }
 
         /// <summary>The underlying graph edge (kind + tooltip Details) — not bound to XML.</summary>
@@ -125,9 +125,36 @@ namespace DiplomacyOverview.UI.ViewModels
         [DataSourceProperty]
         public float HitRotation => _hitRotation;
 
-        /// <summary>Vanilla rich tooltip for this edge, built on hover.</summary>
-        [DataSourceProperty]
-        public BasicTooltipViewModel Hint { get; }
+        /// <summary>
+        /// Shows the vanilla rich tooltip on hover — bound to the hit-strip's Command.HoverBegin.
+        /// Explicit <see cref="InformationManager.ShowTooltip"/> (the pattern working UIExtenderEx
+        /// mods like ImprovedGarrisons use) rather than a passive BasicTooltip, which the injected
+        /// kingdom-screen movie never polls (#10).
+        /// </summary>
+        public void ExecuteShowTooltip()
+        {
+            try
+            {
+                InformationManager.ShowTooltip(typeof(List<TooltipProperty>), BuildTooltip());
+            }
+            catch (Exception ex)
+            {
+                Diagnostics.Note("show tooltip failed: " + ex.Message);
+            }
+        }
+
+        /// <summary>Hides the tooltip on Command.HoverEnd.</summary>
+        public void ExecuteHideTooltip()
+        {
+            try
+            {
+                InformationManager.HideTooltip();
+            }
+            catch
+            {
+                // Never let a tooltip teardown hurt the frame.
+            }
+        }
 
         /// <summary>
         /// Builds the tooltip property list (title + kind + kind-specific rows) from the edge's
@@ -230,18 +257,29 @@ namespace DiplomacyOverview.UI.ViewModels
                 return;
             }
 
-            var remaining = 0;
+            double remainingDays;
             try
             {
-                remaining = Math.Max(0, (int)Math.Round(endDay - CampaignTime.Now.ToDays)); // P-07: hover is in-campaign
+                remainingDays = endDay - CampaignTime.Now.ToDays; // P-07: hover is in-campaign
             }
             catch
             {
-                // No campaign clock — fall back to just omitting the countdown value below is fine.
+                return; // no campaign clock — omit the countdown
             }
 
+            // Only a genuine FUTURE end is a countdown. A non-positive value means the nominal term
+            // already elapsed: vanilla alliances persist past their scheduled EndTime rather than
+            // auto-breaking, so "Ends in 0 days" would be misleading — omit the row for an
+            // established alliance. (Trade agreements are pruned on expiry, so a shown trade edge
+            // always has a future end and still shows its countdown.)
+            if (remainingDays < 0.5)
+            {
+                return;
+            }
+
+            var n = Math.Max(1, (int)Math.Round(remainingDays));
             var label = new TextObject("{=DipOvTipEnds}Ends in").ToString();
-            var value = new TextObject("{=DipOvTipDays}{N} days").SetTextVariable("N", remaining).ToString();
+            var value = new TextObject("{=DipOvTipDays}{N} days").SetTextVariable("N", n).ToString();
             list.Add(new TooltipProperty(label, value, 0));
         }
     }

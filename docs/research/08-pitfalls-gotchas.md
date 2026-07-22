@@ -149,3 +149,24 @@ P-21). **We do not fix it.** A fix means reflowing/constraining a *shared* widge
 occupy — global, untestable across real modlists, and liable to fight other tab-adders; that breaks
 the additive-only posture (doc 06) far more than adding one node does. Adding a tab is composable;
 reshaping the container is surgery. Only in-remit mitigation is a short tab label (P-21).
+
+**P-26 — Gauntlet `Widget.Rotation` is DEGREES, and prefab `@`-bindability is per-property; verify
+both against a decompile.** The #10 hover hit-strip rotated nearly-flat until we traced it: our own
+`DiplomacyOverviewEdgeWidget` sets `Rectangle2D.LocalRotation = atan2 * 180/π` (degrees) and renders
+correctly, and `Widget.Rotation` feeds the same field — so it is degrees too (vanilla literals
+`Rotation="45"` / `"-1.64"` are degrees, not radians; feeding radians ≈ a 0–3° tilt, which reads as
+"unrotated"). Separately, not every property is prefab-data-bindable: confirm before relying on `@`.
+`Rotation`, `AlphaFactor`, and `Brush.FontColor` all bind (the latter two verified in vanilla
+prefabs), but the general rule is decompile-or-grep first — a `@`-binding to an unregistered
+property silently no-ops with no error.
+
+**P-27 — Passive hover hooks don't fire on a UIExtenderEx-injected movie; use explicit hover
+commands.** On our injected Relations panel, `BasicTooltip="@Hint"` never showed a tooltip and
+`UpdateChildrenStates` brush-state never drove a hover glow — even though `Command.Click` worked
+(node → encyclopedia). The injected movie isn't wired into the host screen layer's tooltip-polling /
+hover-state path. Working UIExtenderEx mods (ImprovedGarrisons) skip the passive hooks entirely: an
+invisible-but-hittable widget (`Sprite` + `AlphaFactor="0.0"`) with **`Command.HoverBegin` /
+`Command.HoverEnd`** wired to VM methods — `InformationManager.ShowTooltip(typeof(List<TooltipProperty>), …)`
+/ `HideTooltip()` for the tooltip, or flip a bound `IsHovered` the visual binds `IsVisible` to for a
+highlight. `Command.HoverBegin/End` fire like `Command.Click`, so they work where the passive paths
+are silent. (Corollary: prefer command-driven hover for any injected content.)

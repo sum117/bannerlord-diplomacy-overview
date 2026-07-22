@@ -8,10 +8,10 @@ namespace DiplomacyOverview.Core
     /// to lie along it. A stretched-canvas edge draws its line in OnRender and can't be hovered
     /// per-line; a sibling widget positioned by this result gives it a line-shaped hover region.
     ///
-    /// <see cref="HitStrip.AngleRadians"/> is radians — the unit of Gauntlet's
-    /// <c>Widget.Rotation</c> (assigned straight to <c>AreaRect.LocalRotation</c>, which is what
-    /// hit-testing uses). The strip is positioned top-left with a centre pivot (PivotX/Y = 0.5) so
-    /// the rotation turns it about the segment midpoint.
+    /// <see cref="HitStrip.AngleRadians"/> is math radians (atan2). Gauntlet's
+    /// <c>Widget.Rotation</c> is in DEGREES, though (it feeds <c>Rectangle2D.LocalRotation</c>), so
+    /// the consumer converts. The strip is positioned top-left with a centre pivot (PivotX/Y = 0.5)
+    /// so the rotation turns it about the segment midpoint.
     /// </summary>
     public static class EdgeGeometry
     {

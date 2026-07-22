@@ -24,6 +24,7 @@ namespace DiplomacyOverview.UI.ViewModels
         private readonly float _bannerWidth;
         private readonly float _bannerHeight;
         private readonly bool _showLabel;
+        private bool _isHovered;
 
         public RelationNodeVM(
             string nodeId,
@@ -83,6 +84,26 @@ namespace DiplomacyOverview.UI.ViewModels
         /// <summary>False on dense worlds — names collide faster than they inform (WebDensity).</summary>
         [DataSourceProperty]
         public bool ShowLabel => _showLabel;
+
+        /// <summary>Hover state, driven by the node button's Command.HoverBegin/End. The hover-glow
+        /// overlay binds its IsVisible to this — explicit, not brush-state propagation (#10).</summary>
+        [DataSourceProperty]
+        public bool IsHovered
+        {
+            get => _isHovered;
+            set
+            {
+                if (value != _isHovered)
+                {
+                    _isHovered = value;
+                    OnPropertyChangedWithValue(value);
+                }
+            }
+        }
+
+        public void ExecuteHoverBegin() => IsHovered = true;
+
+        public void ExecuteHoverEnd() => IsHovered = false;
 
         /// <summary>
         /// Opens this faction's encyclopedia page over the kingdom screen — the vanilla link
