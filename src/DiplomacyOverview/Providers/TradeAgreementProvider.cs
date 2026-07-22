@@ -57,7 +57,11 @@ namespace DiplomacyOverview.Providers
             var behavior = Campaign.Current.GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
             if (behavior is null)
             {
-                return Array.Empty<RelationEdge>(); // presence gate: the trade layer simply stays empty
+                // Presence gate: the trade layer simply stays empty. Logged so an empty trade web is
+                // never ambiguous between "data source absent" (this line) and "present, no active
+                // agreements" (the summary below) — the two look identical on screen.
+                Diagnostics.Note("trade provider: ITradeAgreementsCampaignBehavior absent — no trade lines (pre-1.4 save / total conversion?)");
+                return Array.Empty<RelationEdge>();
             }
 
             var participants = new List<Kingdom>();
@@ -100,6 +104,11 @@ namespace DiplomacyOverview.Providers
                 }
             }
 
+            // Behavior present: distinguishes "no agreements exist" (edges == 0 here) from the
+            // absent-behavior note above and from a provider crash ("failed outright").
+            Diagnostics.Note(
+                "trade provider: behavior present, " + participants.Count + " kingdoms, "
+                + edges.Count + " active agreement(s)");
             return edges;
         }
 
