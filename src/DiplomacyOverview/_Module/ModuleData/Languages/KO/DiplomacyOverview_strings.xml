@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="한국어" />
+  </tags>
+  <strings>
+    <string id="DipOvTab01" text="관계" />
+    <string id="DipOvTitle1" text="관계" />
+    <string id="DipOvKindWar" text="전쟁 중" />
+    <string id="DipOvKindAlliance" text="동맹" />
+    <string id="DipOvKindTrade" text="무역 협정" />
+    <string id="DipOvKindNap" text="불가침 조약" />
+    <string id="DipOvKindCallToWar" text="전쟁령" />
+    <string id="DipOvEdgeTitle" text="{A}  —  {B}" />
+    <string id="DipOvTipTribute" text="공물" />
+    <string id="DipOvTipTributeVal" text="{P}이(가) 매일 {A} 지급" />
+    <string id="DipOvTipLosses" text="{F} 사상자" />
+    <string id="DipOvTipEarned" text="{F} 수익" />
+    <string id="DipOvTipEnds" text="남은 시간" />
+    <string id="DipOvTipDays" text="{N}일" />
+  </strings>
+</base>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="繁體中文" />
+  </tags>
+  <strings>
+    <string id="DipOvTab01" text="關係" />
+    <string id="DipOvTitle1" text="關係" />
+    <string id="DipOvKindWar" text="交戰狀態" />
+    <string id="DipOvKindAlliance" text="聯盟" />
+    <string id="DipOvKindTrade" text="貿易協定" />
+    <string id="DipOvKindNap" text="互不侵犯條約" />
+    <string id="DipOvKindCallToWar" text="戰爭號召" />
+    <string id="DipOvEdgeTitle" text="{A}  —  {B}" />
+    <string id="DipOvTipTribute" text="貢金" />
+    <string id="DipOvTipTributeVal" text="{P}每日進獻{A}" />
+    <string id="DipOvTipLosses" text="{F}傷亡" />
+    <string id="DipOvTipEarned" text="{F}收益" />
+    <string id="DipOvTipEnds" text="剩餘時間" />
+    <string id="DipOvTipDays" text="{N}天" />
+  </strings>
+</base>

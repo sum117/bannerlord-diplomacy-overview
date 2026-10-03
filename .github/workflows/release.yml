@@ -1,8 +1,18 @@
 name: Release
 
 # Cut a release by pushing a version tag, e.g.:  git tag v1.0.0 && git push origin v1.0.0
-# The tag name becomes the release name and the artifact zip suffix. Keep it in sync with the
-# <Version> in the csproj / SubModule.xml.
+# The tag name becomes the release name and the artifact zip suffix. It must match the <Version> in
+# the csproj / SubModule.xml — the "Verify tag" step fails the run otherwise.
+#
+# The same zip is then uploaded to Nexus Mods (mod page 12242) as a new version of the existing main
+# file. Repo settings it reads:
+#   - secret   NEXUSMODS_API_KEY  — personal key from https://www.nexusmods.com/settings/api-keys
+#   - variable NEXUSMODS_FILE_ID  — the v3 API "mod file" id = the file *group* id (7696464), NOT the
+#                                   file id in download URLs (63480)
+#   - variable NEXUSMODS_MOD_ID   — the v3 API mod uid (13632226209746), NOT the page number (12242);
+#                                   optional, enables the changelog entry
+# Both ids are attributes of the Files tab → "Advanced" dialog (file-group-id / mod-uid).
+# Without NEXUSMODS_FILE_ID the Nexus step is skipped with a warning; the GitHub release still ships.
 on:
   push:
     tags:
@@ -21,6 +31,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Fail before building if the tag and the shipped version disagree: the launcher shows the
+      # SubModule.xml version, Nexus shows the tag's — a mismatch makes update checks lie to users.
+      - name: Verify tag matches module version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $module = ([xml](Get-Content "src/DiplomacyOverview/_Module/SubModule.xml")).Module.Version.value
+          $csproj = [xml](Get-Content "src/DiplomacyOverview/DiplomacyOverview.csproj")
+          $assembly = "v" + ($csproj.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          $game = ($csproj.Project.PropertyGroup.GameVersion | Where-Object { $_ } | Select-Object -First 1)
+          if ($module -ne $tag -or $assembly -ne $tag) {
+            Write-Error "Tag $tag does not match SubModule.xml ($module) / csproj ($assembly). Bump both, then re-tag."
+            exit 1
+          }
+          "number=$($tag.TrimStart('v'))" >> $env:GITHUB_OUTPUT
+          "game=$($game -replace '\.\d+$','')" >> $env:GITHUB_OUTPUT
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -57,3 +85,27 @@ jobs:
           files: DiplomacyOverview-${{ github.ref_name }}.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
+
+      # Adds a new version to the existing Nexus main file (v3 upload API). Runs after the GitHub
+      # release so a Nexus outage never blocks it. If only this step fails, re-run the job (the
+      # release step is idempotent) or upload the release zip by hand — do not re-tag.
+      - name: Upload to Nexus Mods
+        if: vars.NEXUSMODS_FILE_ID != ''
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: ${{ vars.NEXUSMODS_FILE_ID }}
+          filename: DiplomacyOverview-${{ github.ref_name }}.zip
+          version: ${{ steps.version.outputs.number }}
+          display_name: DiplomacyOverview V${{ steps.version.outputs.number }}
+          description: For Bannerlord v${{ steps.version.outputs.game }}. If you find any issues with the mod, file an issue at https://github.com/${{ github.repository }}.
+          category: main
+          archive_existing_version: true
+          primary_mod_manager_download: true
+          update_mod_version: true
+          mod_id: ${{ vars.NEXUSMODS_MOD_ID }}
+          changelog: ${{ vars.NEXUSMODS_MOD_ID != '' && format('Release notes - https://github.com/{0}/releases/tag/{1}', github.repository, github.ref_name) || '' }}
+
+      - name: Nexus upload skipped
+        if: vars.NEXUSMODS_FILE_ID == ''
+        run: echo "::warning::NEXUSMODS_FILE_ID is not set - skipped the Nexus Mods upload. See the header of release.yml."

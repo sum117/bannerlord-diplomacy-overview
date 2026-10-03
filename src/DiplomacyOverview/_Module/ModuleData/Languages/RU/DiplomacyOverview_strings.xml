@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="Русский" />
+  </tags>
+  <strings>
+    <string id="DipOvTab01" text="Отношения" />
+    <string id="DipOvTitle1" text="Отношения" />
+    <string id="DipOvKindWar" text="В состоянии войны" />
+    <string id="DipOvKindAlliance" text="Союз" />
+    <string id="DipOvKindTrade" text="Торговое соглашение" />
+    <string id="DipOvKindNap" text="Пакт о ненападении" />
+    <string id="DipOvKindCallToWar" text="Призыв к войне" />
+    <string id="DipOvEdgeTitle" text="{A}  —  {B}" />
+    <string id="DipOvTipTribute" text="Дань" />
+    <string id="DipOvTipTributeVal" text="{P} платит {A} / день" />
+    <string id="DipOvTipLosses" text="Потери: {F}" />
+    <string id="DipOvTipEarned" text="Доход: {F}" />
+    <string id="DipOvTipEnds" text="Осталось" />
+    <string id="DipOvTipDays" text="{N} дн." />
+  </strings>
+</base>
