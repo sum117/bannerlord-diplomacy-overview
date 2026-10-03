@@ -9,19 +9,22 @@ Compiled **2026-07-01** against v1.3.15. **Re-verified 2026-07-22 against v1.4.7
 Steam install updated — the deltas, the executed pin bump, and the new native Trade Agreement API
 live in [11-game-1.4.7-migration.md](11-game-1.4.7-migration.md). Version-tagged claims in docs
 01–10 describe the 1.3.15 state they were researched against unless doc 11 says otherwise.
+**Re-pinned 2026-10-03 to v1.4.8.119303** on the Linux install — see
+[12-game-1.4.8-update.md](12-game-1.4.8-update.md) (compile-level + asset checks only; in-game
+smoke test pending).
 
 ## Target baseline (verified on the dev machine)
 
 | Component | Version | Notes |
 |---|---|---|
-| Game (Steam) | **v1.4.7** (changeset `117484`) | `bin\Win64_Shipping_Client` only → .NET Framework client |
-| War Sails DLC | NavalDLC **v1.2.7** (`RequiredBaseVersion v1.4.7`) | now `DefaultModule=true` |
-| Bannerlord.Harmony | v2.4.2.248 | installed |
-| Bannerlord.ButterLib | v2.11.1 | installed |
-| Bannerlord.UIExtenderEx | v2.13.3 | installed |
-| MCM (Bannerlord.MBOptionScreen) | v5.12.2 | installed |
+| Game (Steam) | **v1.4.8** (changeset `119303`) | `bin\Win64_Shipping_Client` only → .NET Framework client |
+| War Sails DLC | NavalDLC **v1.2.8** (`RequiredBaseVersion v1.4.8`) | now `DefaultModule=true` |
+| Bannerlord.Harmony | v2.4.2.248 | baseline; **not installed** in the Linux game copy |
+| Bannerlord.ButterLib | v2.11.1 | baseline; not installed |
+| Bannerlord.UIExtenderEx | v2.13.3 | baseline; **not installed** in the Linux game copy |
+| MCM (Bannerlord.MBOptionScreen) | v5.12.2 | baseline; not installed |
 | Bannerlord.Diplomacy | **not installed** (was v1.3.3 pre-reformat) | NAP adapter (#9) has no local test target |
-| BLSE | installed (`Bannerlord.BLSE.*.exe` in game bin) | active launcher |
+| BLSE | **not installed** (Linux/Proton copy uses the vanilla launcher) | — |
 | Realm of Thrones | **not installed**; v8.0 (Apr 2026) targeted the 1.3.x branch — 1.4.x support unverified | compat target |
 
 ## The documents
@@ -39,6 +42,7 @@ live in [11-game-1.4.7-migration.md](11-game-1.4.7-migration.md). Version-tagged
 | [09-design-reference-mapping.md](09-design-reference-mapping.md) | Mockup → widget mapping, client-request traceability, v1 scope recommendation |
 | [10-tracer-findings.md](10-tracer-findings.md) | Issue #5 tracer verdicts: S1/S3 resolved (decompile evidence), S2 manual test script, corrections to docs 04/07 |
 | [11-game-1.4.7-migration.md](11-game-1.4.7-migration.md) | 1.3.15 → 1.4.7 delta: executed pin bump, seam re-verification, native Trade Agreement API |
+| [12-game-1.4.8-update.md](12-game-1.4.8-update.md) | 1.4.7 → 1.4.8 delta: pin bump, seam re-verification on the Linux install, Nexus release automation |
 
 ## Provenance & confidence legend
 

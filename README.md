@@ -22,12 +22,14 @@ remove mid-campaign, writes nothing into your saves.
 - **Hover tooltips** — war casualties and tribute, alliance/trade expiry countdowns, per-kingdom
   trade gold — in the game's own tooltip style.
 - **Click a medallion** → the faction's encyclopedia page. A subtle glow marks what you're hovering.
+- **Localized** into every language the game ships: Português (BR), 简体中文, 繁體中文, Deutsch,
+  Français, Italiano, 日本語, 한국어, Polski, Русский, Español (LA) and Türkçe.
 
 Where to find it: open your **Clan** screen → the **Relations** tab (between *Fiefs* and *Income*).
 
 ## Requirements
 
-- **Mount & Blade II: Bannerlord v1.4.7** (+ War Sails DLC supported)
+- **Mount & Blade II: Bannerlord v1.4.8** (+ War Sails DLC supported)
 - [Harmony](https://www.nexusmods.com/mountandblade2bannerlord/mods/2006) (v2.4.2+)
 - [UIExtenderEx](https://www.nexusmods.com/mountandblade2bannerlord/mods/2102) (v2.13.3+)
 
@@ -42,7 +44,14 @@ Where to find it: open your **Clan** screen → the **Relations** tab (between *
 ## Compatibility
 
 Additive-only UI injection (no Harmony patches of our own, no campaign mutation), so it composes
-cleanly with other mods and is save-safe. Built and verified against vanilla v1.4.7 + War Sails.
+cleanly with other mods and is save-safe. Built against vanilla v1.4.8 + War Sails.
+
+## Translating
+
+Translations live in `Modules\DiplomacyOverview\ModuleData\Languages\<code>\DiplomacyOverview_strings.xml`
+(14 short strings; the English template sits one folder up). Faction and relation terms follow the
+game's own wording in each language, but the rest has not been reviewed by native speakers —
+corrections are welcome as an issue or pull request.
 
 ## Roadmap
 
