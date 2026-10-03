@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="English" />
+  </tags>
+  <strings>
+    <string id="DipOvTab01" text="Relations" />
+    <string id="DipOvTitle1" text="Relations" />
+    <string id="DipOvKindWar" text="At War" />
+    <string id="DipOvKindAlliance" text="Alliance" />
+    <string id="DipOvKindTrade" text="Trade Agreement" />
+    <string id="DipOvKindNap" text="Non-Aggression Pact" />
+    <string id="DipOvKindCallToWar" text="Call to War" />
+    <string id="DipOvEdgeTitle" text="{A}  —  {B}" />
+    <string id="DipOvTipTribute" text="Tribute" />
+    <string id="DipOvTipTributeVal" text="{P} pays {A} / day" />
+    <string id="DipOvTipLosses" text="{F} losses" />
+    <string id="DipOvTipEarned" text="{F} earned" />
+    <string id="DipOvTipEnds" text="Ends in" />
+    <string id="DipOvTipDays" text="{N} {?N &gt; 1}days{?}day{\?}" />
+  </strings>
+</base>

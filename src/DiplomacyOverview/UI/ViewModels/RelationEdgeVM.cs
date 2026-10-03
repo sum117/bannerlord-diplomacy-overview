@@ -279,7 +279,7 @@ namespace DiplomacyOverview.UI.ViewModels
 
             var n = Math.Max(1, (int)Math.Round(remainingDays));
             var label = new TextObject("{=DipOvTipEnds}Ends in").ToString();
-            var value = new TextObject("{=DipOvTipDays}{N} days").SetTextVariable("N", n).ToString();
+            var value = new TextObject("{=DipOvTipDays}{N} {?N > 1}days{?}day{\\?}").SetTextVariable("N", n).ToString();
             list.Add(new TooltipProperty(label, value, 0));
         }
     }

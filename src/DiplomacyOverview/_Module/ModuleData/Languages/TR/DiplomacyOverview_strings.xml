@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="Türkçe" />
+  </tags>
+  <strings>
+    <string id="DipOvTab01" text="İlişkiler" />
+    <string id="DipOvTitle1" text="İlişkiler" />
+    <string id="DipOvKindWar" text="Savaşta" />
+    <string id="DipOvKindAlliance" text="İttifak" />
+    <string id="DipOvKindTrade" text="Ticaret Anlaşması" />
+    <string id="DipOvKindNap" text="Saldırmazlık Paktı" />
+    <string id="DipOvKindCallToWar" text="Savaş Çağrısı" />
+    <string id="DipOvEdgeTitle" text="{A}  —  {B}" />
+    <string id="DipOvTipTribute" text="Haraç" />
+    <string id="DipOvTipTributeVal" text="{P} günde {A} ödüyor" />
+    <string id="DipOvTipLosses" text="Kayıplar: {F}" />
+    <string id="DipOvTipEarned" text="Kazanç: {F}" />
+    <string id="DipOvTipEnds" text="Kalan süre" />
+    <string id="DipOvTipDays" text="{N} gün" />
+  </strings>
+</base>
